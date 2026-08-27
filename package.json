@@ -1,0 +1,26 @@
+{
+  "name": "trabajo final backend",
+  "version": "1.0.0",
+  "description": "Alquiler de canchas",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index",
+    "dev": "node --env-file .env --watch index"
+  },
+  "keywords": [
+    "middleware",
+    "documentos",
+    "modelos",
+    "endpoint"
+  ],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@11.5.2",
+  "type": "module",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "mongoose": "^9.9.4",
+    "morgan": "^1.11.0"
+  }
+}
