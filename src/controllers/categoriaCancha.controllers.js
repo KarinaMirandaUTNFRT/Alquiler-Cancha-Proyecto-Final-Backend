@@ -51,7 +51,7 @@ export const borrarCategoria = async (req, res) => {
 };
 export const editarCategoria = async (req, res) => {
   try {
-    const categoriaActualizado = await CategoriaCategoria.findByIdAndUpdate(
+    const categoriaActualizada = await CategoriaCancha.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true },
