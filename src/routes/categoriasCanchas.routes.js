@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   borrarCategoria,
   crearCategoriaCancha,
+  editarCategoria,
   listarCategoriasCanchas,
 } from "../controllers/categoriaCancha.controllers.js";
 
@@ -11,7 +12,10 @@ router.route("/")
 .post(crearCategoriaCancha)
 .get(listarCategoriasCanchas);
 
+
 router.route("/:id")
-.delete(borrarCategoria);
+.delete(borrarCategoria)
+.put( editarCategoria)
+.patch(editarCategoria);
 
 export default router;

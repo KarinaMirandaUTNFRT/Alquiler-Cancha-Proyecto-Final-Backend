@@ -49,3 +49,26 @@ export const borrarCategoria = async (req, res) => {
       .json({ mensaje: "Ocurrió un error al intentar borrar una categoria" });
   }
 };
+export const editarCategoria = async (req, res) => {
+  try {
+    const categoriaActualizado = await CategoriaCategoria.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true },
+    );
+    if (!categoriaActualizada) {
+      return res
+        .status(404)
+        .json({ mensaje: "No se encontró la categoria para editar" });
+    }
+    res.status(200).json({
+      mensaje: "La categoria fue modificada con éxito",
+      categoriaActualizada,
+    });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ mensaje: "Ocurrió un error al intentar editar la categoria" });
+  }
+};
