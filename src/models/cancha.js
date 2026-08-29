@@ -2,8 +2,9 @@ import mongoose, { Schema } from "mongoose";
 
 const canchaSchema = new Schema(
     {
-        nombreCancha:
-           nombreCancha:{type: String,
+        
+           nombreCancha:{
+            type: String,
              required: true,
              unique: true,
              minlength:5, 
@@ -22,15 +23,18 @@ const canchaSchema = new Schema(
     categoria:{
         type: Schema.Types.ObjectId, 
         required: true,     
-    ref: "categoria",
+        ref: "categoria",
 },
-    descripcion: { type: String,  
+    descripcion: { 
+        
+        type: String,  
         minlength: 10, 
         maxlength:500, 
         required: true,
     },
-    
-    {
+
+},
+{
     timpestamps: true
 }
 );
