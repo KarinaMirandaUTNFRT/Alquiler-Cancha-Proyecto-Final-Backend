@@ -23,7 +23,7 @@ const canchaSchema = new Schema(
     categoria:{
         type: Schema.Types.ObjectId, 
         required: true,     
-        ref: "categoria",
+        ref: "categoriaCancha",
 },
     descripcion: { 
         
