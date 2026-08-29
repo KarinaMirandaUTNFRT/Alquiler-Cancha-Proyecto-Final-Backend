@@ -1,4 +1,4 @@
-import CategoriaCancha from "../models/categoriaCancha";
+import CategoriaCancha from "../models/categoriaCancha.js";
 
 export const crearCategoriaCancha = async (req, res) => {
   try {

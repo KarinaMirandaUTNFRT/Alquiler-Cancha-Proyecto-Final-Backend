@@ -6,3 +6,4 @@ const router = Router ()
 
 router.route("/").post(crearCategoriaCancha).get(listarCategoriasCanchas)
 
+export default router;
