@@ -1,9 +1,17 @@
 import { Router } from "express";
-import { crearCategoriaCancha, listarCategoriasCanchas } from "../controllers/categoriaCancha.controllers.js";
+import {
+  borrarCategoria,
+  crearCategoriaCancha,
+  listarCategoriasCanchas,
+} from "../controllers/categoriaCancha.controllers.js";
 
+const router = Router();
 
-const router = Router ()
+router.route("/")
+.post(crearCategoriaCancha)
+.get(listarCategoriasCanchas);
 
-router.route("/").post(crearCategoriaCancha).get(listarCategoriasCanchas)
+router.route("/:id")
+.delete(borrarCategoria);
 
 export default router;
