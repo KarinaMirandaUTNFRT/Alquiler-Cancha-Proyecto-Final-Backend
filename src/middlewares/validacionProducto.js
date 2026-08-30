@@ -3,7 +3,7 @@ import resultadoValidacion from "./resultadoValidacion.js";
 import Producto from "../models/producto.js";
 
 export const reglasProducto = [
-  body("nnombreProducto")
+  body("nombreProducto")
     .isString()
     .withMessage("El dato debe ser un string")
     .isLength({ min: 5, max: 100 })
