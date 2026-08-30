@@ -23,7 +23,7 @@ const validacionCancha = [
         return true
       }
       throw new Error(
-        "El nombre de la cancha ya existe, elige otron diferente",
+        "El nombre de la cancha ya existe, elige otro diferente",
       );
     }),
   
