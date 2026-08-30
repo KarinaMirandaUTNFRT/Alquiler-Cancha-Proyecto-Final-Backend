@@ -6,7 +6,7 @@ import {
     editarCancha,
     obtenerCanchasid,
  } from "../controllers/cancha.controllers.js";
- import validacionCancha from "../middlewares/validacionCancha.js";
+ import {validacionCancha, validacionIdCancha} from "../middlewares/validacionCancha.js";
 
 const router = Router ()
 
@@ -15,9 +15,9 @@ router.route("/")
 .get(listarCanchas)
 
 router.route("/:id")
-.get(obtenerCanchasid)
-.delete(borrarCancha)
-.put(validacionCancha, editarCancha);
+.get(validacionIdCancha, obtenerCanchasid)
+.delete(validacionIdCancha, borrarCancha)
+.put( [validacionIdCancha, validacionCancha], editarCancha)
 .patch(editarCancha)
 
 export default router

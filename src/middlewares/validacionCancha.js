@@ -41,4 +41,9 @@ body("descripcion")
 export const validacionCancha = [...reglasCancha.map((regla)=>regla.notEmpty().withMessage('Este campo es obligatorio')
 ), resultadoValidacion]
 
-export default validacionCancha;
+export const validacionIdCancha = [
+param('id').isMongoId().withMessage('el id no corresponde a un formato correcto')
+  ,
+  resultadoValidacion
+]
+
