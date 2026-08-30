@@ -16,6 +16,7 @@ export default class Server {
   }
   routes(){
     this.app.use('/categoriaCanchas', categoriaCanchaRoutes)
+    this.app.use('/canchas', categoriaCanchaRoutes)
   }
 
   // aqui agregar el resto de los metodos del futuro objeto

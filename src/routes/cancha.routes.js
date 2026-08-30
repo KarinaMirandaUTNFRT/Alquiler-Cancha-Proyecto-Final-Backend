@@ -1,16 +1,23 @@
 import { Router } from "express";
-import { crearCancha, listarCanchas } from "../controllers/cancha.controllers.js";
-import validacionCancha from "../middlewares/validacionCancha.js";
+import { 
+    crearCancha, 
+    listarCanchas,
+    borrarCancha,
+    editarCancha,
+    obtenerCanchasid,
+    
+ } from "../controllers/cancha.controllers.js";
 
 const router = Router ()
 
 router.route("/")
-.post(validacionCancha, crearCancha)
+.post(crearCancha)
 .get(listarCanchas)
 
-router
-  .route("/:id")
-  .delete(borrarCancha)
-  .put([validacionCancha], editarCancha);
-  
+router.route("/:id")
+.get(obtenerCanchasid)
+.delete(borrarCancha)
+.put( editarCancha)
+.put([validacionCancha], editarCancha);
+
 export default router
