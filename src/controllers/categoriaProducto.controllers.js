@@ -45,7 +45,7 @@ export const obtenerCategoriaProductoPorID = async (req, res) => {
 
 export const borrarCategoriaProductoPorID = async (req, res) => {
   try {
-    const categoriaBuscada = await Categoria.findByIdAndDelete(req.params.id);
+    const categoriaBuscada = await CategoriaProducto.findByIdAndDelete(req.params.id);
    
     if (!categoriaBuscada) {
       return res
@@ -65,7 +65,7 @@ export const borrarCategoriaProductoPorID = async (req, res) => {
 export const editarCategoriaProductoPorID = async (req, res) => {
   try {
     //deberia validar que el id exista y sea un id de mongodb
-    const categoriaBuscada = await Categoria.findByIdAndUpdate(req.params.id, req.body, {new:true})
+    const categoriaBuscada = await CategoriaProducto.findByIdAndUpdate(req.params.id, req.body, {new:true})
     if (!categoriaBuscada) {
       return res
         .status(404)

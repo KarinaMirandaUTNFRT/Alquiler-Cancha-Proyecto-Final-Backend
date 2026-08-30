@@ -5,3 +5,5 @@ const router = Router()
 
 router.route('/').post(crearProducto).get(listarProductos)
 router.route('/:id').get(obtenerProductoPorID).delete(borrarProductoPorID).put(editarProductoPorID).patch(editarProductoPorID)
+
+export default router;
