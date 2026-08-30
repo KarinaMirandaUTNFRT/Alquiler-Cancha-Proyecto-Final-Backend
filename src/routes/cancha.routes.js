@@ -4,7 +4,13 @@ import validacionCancha from "../middlewares/validacionCancha.js";
 
 const router = Router ()
 
-router.route("/").post(validacionCancha, crearCancha).get(listarCanchas)
+router.route("/")
+.post(validacionCancha, crearCancha)
+.get(listarCanchas)
 
-
+router
+  .route("/:id")
+  .delete(borrarCancha)
+  .put([validacionCancha], editarCancha);
+  
 export default router

@@ -14,9 +14,13 @@ const validacionCancha = [
     .withMessage("El nombre de la cancha debe contener entre 5 y 10 caracteres")
     .custom(async (valorNom, { req }) => {
       const valorNomBuscado = await Cancha.findOne({ nombreCancha: valorNom });
-
+       console.log(valorNomBuscado)
       if (!valorNomBuscado) {
         return true;
+      }
+      if (req.params?.id && valorNomBuscado._id.toString()===req.params.id)
+      {
+        return true
       }
       throw new Error(
         "El nombre de la cancha ya existe, elige otron diferente",
