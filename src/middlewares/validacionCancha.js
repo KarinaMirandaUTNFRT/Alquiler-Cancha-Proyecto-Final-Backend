@@ -22,6 +22,15 @@ const validacionCancha = [
         "El nombre de la cancha ya existe, elige otron diferente",
       );
     }),
+  
+body("precio")
+    .isNumeric()
+    .withMessage("el precio debe ser un valor numerico")
+    .isFloat({ min: 50 })
+    .withMessage("el precio minimo es de $1000 pesos")
+    ,
+
+
   resultadoValidacion,
 ];
 export default validacionCancha;
