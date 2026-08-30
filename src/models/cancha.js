@@ -5,7 +5,6 @@ const canchaSchema = new Schema(
     nombreCancha: {
       type: String,
       required: true,
-      unique: true,
       minlength: 5,
       maxlength: 100,
       trim: true,
