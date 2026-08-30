@@ -38,6 +38,7 @@ body("descripcion")
     .withMessage("La descripcion no debe exceder los 500 caracteres"),
 ];
 
-export const validacionCancha = 
+export const validacionCancha = [...reglasCancha.map((regla)=>regla.notEmpty().withMessage('Este campo es obligatorio')
+), resultadoValidacion]
 
 export default validacionCancha;

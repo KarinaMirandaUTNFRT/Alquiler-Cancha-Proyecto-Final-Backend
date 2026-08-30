@@ -18,5 +18,6 @@ router.route("/:id")
 .get(obtenerCanchasid)
 .delete(borrarCancha)
 .put(validacionCancha, editarCancha);
+.patch(editarCancha)
 
 export default router
