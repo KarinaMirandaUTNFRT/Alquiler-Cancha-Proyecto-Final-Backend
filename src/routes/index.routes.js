@@ -5,7 +5,7 @@ import productosRouter from './productos.routes.js'
 import categoriaProductosRouter from './categoriasProductos.routes.js'
 
 
-const router =Router()
+const router = Router()
 router.use("/canchas", canchasRouter);
 router.use("/categoriaCanchas", CategoriaCanchasRouter);
 router.use('/productos', productosRouter)
