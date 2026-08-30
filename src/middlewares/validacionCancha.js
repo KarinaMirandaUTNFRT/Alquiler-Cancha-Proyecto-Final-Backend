@@ -2,10 +2,8 @@ import { body } from "express-validator";
 import resultadoValidacion from "./resultadoValidacion.js";
 import Cancha from "../models/cancha.js";
 
-const validacionCancha = [
+const reglasCancha = [
   body("nombreCancha")
-    .notEmpty()
-    .withMessage("El nombre de la cancha es un dato obligatorio")
     .isString()
     .withMessage(
       "El nombre de la cancha es un dato obligatorio y debe ser un texto",
@@ -38,8 +36,8 @@ body("descripcion")
     .withMessage("La descripcion  de la cancha debe ser un string")
     .isLength({ min: 10, max: 500 })
     .withMessage("La descripcion no debe exceder los 500 caracteres"),
-
-
-  resultadoValidacion,
 ];
+
+export const validacionCancha = 
+
 export default validacionCancha;
