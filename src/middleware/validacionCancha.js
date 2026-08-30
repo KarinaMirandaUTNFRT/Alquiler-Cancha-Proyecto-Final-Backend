@@ -29,6 +29,11 @@ body("precio")
     .isFloat({ min: 50 })
     .withMessage("el precio minimo es de $1000 pesos")
     ,
+body("descripcion")
+    .isString()
+    .withMessage("La descripcion  de la cancha debe ser un string")
+    .isLength({ min: 10, max: 500 })
+    .withMessage("La descripcion no debe exceder los 500 caracteres"),
 
 
   resultadoValidacion,
