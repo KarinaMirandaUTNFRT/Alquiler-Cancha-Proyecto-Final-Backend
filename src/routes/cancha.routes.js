@@ -1,9 +1,23 @@
 import { Router } from "express";
-import { crearCancha, listarCanchas } from "../controllers/cancha.controllers.js";
+import { 
+    crearCancha, 
+    listarCanchas,
+    borrarCancha,
+    editarCancha,
+    obtenerCanchasid,
+    
+ } from "../controllers/cancha.controllers.js";
 
 const router = Router ()
 
-router.route("/").post(crearCancha).get(listarCanchas)
+router.route("/")
+.post(crearCancha)
+.get(listarCanchas)
 
+router.route("/:id")
+.get(obtenerCanchasid)
+.delete(borrarCancha)
+.put( editarCancha)
+.patch(editarCancha);
 
 export default router
