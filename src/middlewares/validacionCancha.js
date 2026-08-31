@@ -8,8 +8,8 @@ const reglasCancha = [
     .withMessage(
       "El nombre de la cancha es un dato obligatorio y debe ser un texto",
     )
-    .isLength({ min: 5, max: 10 })
-    .withMessage("El nombre de la cancha debe contener entre 5 y 10 caracteres")
+    .isLength({ min: 5, max: 100 })
+    .withMessage("El nombre de la cancha debe contener entre 5 y 100 caracteres")
     .custom(async (valorNom, { req }) => {
       const valorNomBuscado = await Cancha.findOne({ nombreCancha: valorNom });
       console.log(valorNomBuscado);
@@ -49,5 +49,6 @@ export const validacionIdCancha = [
   param("id")
     .isMongoId()
     .withMessage("El id no corresponde a un formato correcto"),
+    
   resultadoValidacion,
 ];
