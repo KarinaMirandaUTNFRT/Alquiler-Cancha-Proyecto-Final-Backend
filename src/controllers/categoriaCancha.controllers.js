@@ -72,3 +72,20 @@ export const editarCategoria = async (req, res) => {
       .json({ mensaje: "Ocurrió un error al intentar editar la categoria" });
   }
 };
+export const obtenerCategoriaCanchaPorID = async (req, res) => {
+  try {
+    console.log(req.params.id);
+    const categoriaBuscada = await Categoria.findById(req.params.id)
+    if (!categoriaBuscada) {
+      return res
+        .status(404)
+        .json({ mensaje: "No se encontro una categoria con ese ID" });
+    }
+    res.status(200).json(categoriaBuscada);
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ mensaje: "Ocurrio un error al buscar una categoria por ID" });
+  }
+};
