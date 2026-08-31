@@ -44,7 +44,6 @@ export const reglasUsuario = [
     )
 ];
 
-// para validar en post y put
 export const validacionUsuario=[...reglasUsuario.map((regla)=> regla.notEmpty().withMessage('Este campo es obligaotio')), resultadoValidacion]
 
 export const validacionUsuarioPatch = [...reglasUsuario.map((regla) => regla.optional({values:'falsy'})), resultadoValidacion]
