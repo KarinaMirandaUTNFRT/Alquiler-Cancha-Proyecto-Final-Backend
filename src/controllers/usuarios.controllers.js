@@ -3,9 +3,9 @@ import transporter from "../utils/mailer.js";
 
 export const crearUsuario = async (req, res) => {
   try {
-    // falta hashear el password
+    
     const usuarioNuevo = new Usuario(req.body);
-    // aqui quiero guardar en la BD
+  
     await usuarioNuevo.save();
     res.status(201).json({ mensaje: "El usuario fue creado" });
   } catch (error) {
@@ -65,7 +65,7 @@ export const borrarUsuarioPorID = async (req, res) => {
 
 export const editarUsuarioPorID = async (req, res) => {
   try {
-    //deberia validar que el id exista y sea un id de mongodb
+   
     const usuarioActualizado = await Usuario.findByIdAndUpdate(
       req.params.id,
       req.body,
@@ -196,3 +196,55 @@ export const confirmarCodigoVerificacion = async (req, res) => {
       });
   }
 };
+export const solicitarNuevoCodigo = async(req, res) =>{
+  try{
+    const {email} = req.body
+   
+    const usuarioBuscado = await Usuario.findOne({email})
+    if(!usuarioBuscado){
+      return res.status(404).json({mensaje:'No se encontró ningun usuario con el email enviado'})
+    }
+
+   if(usuarioBuscado.verificado){
+      return res.status(400).json({mensaje:'Esta cuenta ya esta verificada'})
+    }
+
+    const codigoVerificacion = Math.floor(
+      100000 + Math.random() * 900000,
+    ).toString(); 
+    const tiempoExpiracion = new Date(Date.now() + 15 * 60 * 1000);
+   
+    await Usuario.findByIdAndUpdate(usuarioBuscado._id,
+      {
+        codigoVerificacion,
+        fechaExpiracionCodigo: tiempoExpiracion
+      }
+    )
+
+await transporter.sendMail({
+      from: '"CRUD Usuario" <no-reply@crud-usuario.com>',
+      to: email,
+      subject: "Nuevo 🔑 Código de Verificación de Cuenta",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 5px;">
+          <h2 style="color: #333; text-align: center;">¡Hola, ${usuarioBuscado.nombreUsuario}!</h2>
+          <p style="color: #666; font-size: 16px; line-height: 1.5;">
+            Has solicitado un nuevo código para activar tu cuenta y poder ingresar a la plataforma, por favor utiliza el siguiente código de verificación:
+          </p>
+          <div style="background-color: #f4f4f4; padding: 15px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; margin: 20px 0; border-radius: 4px; color: #007bff;">
+            ${codigoVerificacion}
+          </div>
+          <p style="color: #999; font-size: 12px; text-align: center;">
+            Este código vencerá en 15 minutos. Si no solicitaste este registro, puedes ignorar este correo de forma segura.
+          </p>
+        </div>
+      `,
+    });
+
+    res.status(200).json({mensaje: 'El nuevo código de verificación fue enviado.'})
+
+  }catch(error){
+    console.error(error)
+    res.status(500).json({mensaje: 'Ocurrio un error al crear un nuevo código de verificación'})
+  }
+}
