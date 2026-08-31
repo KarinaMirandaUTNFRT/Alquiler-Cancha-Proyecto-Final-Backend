@@ -6,5 +6,5 @@ const router = Router()
 
 router.route('/').post(validacionUsuario,crearUsuario).get(listarUsuarios)
 router.route('/:id').get(validacionIDUsuario,obtenerUsuariosPorID).delete(validacionIDUsuario, borrarUsuarioPorID).put([validacionIDUsuario,validacionUsuario],editarUsuarioPorID).patch(validacionUsuarioPatch,editarUsuarioPorID)
-
+router.route('/registro').post()
 export default router

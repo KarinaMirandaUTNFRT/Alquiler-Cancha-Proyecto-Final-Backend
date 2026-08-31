@@ -80,3 +80,15 @@ export const editarUsuarioPorID = async (req, res) => {
       .json({ mensaje: "Ocurrio un error al intentar editar un usuario por id" });
   }
 };
+export const registrarUsuario = async (req, res )=> {
+  try {
+    
+
+    
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ mensaje: "Ocurrio un error al intentar registrar un usuario por id" });
+  }
+}

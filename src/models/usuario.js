@@ -34,6 +34,16 @@ const UsuarioSchema = new Schema(
       required: true,
       enum: ['Admin', 'Cliente'],
       default:'Cliente'
+    },
+    verificado: {
+      type: Boolean,
+      default: false,
+    },
+    codigoVerificacion:{
+      type: String
+    },
+    fechaExpiracionCodigo:{
+      type: Date
     }
   },
   {
