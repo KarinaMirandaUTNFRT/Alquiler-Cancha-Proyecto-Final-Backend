@@ -1,6 +1,15 @@
 import { Router } from "express";
-import { borrarUsuarioPorID, crearUsuario, editarUsuarioPorID, listarUsuarios, obtenerUsuariosPorID, registrarUsuario } from "../controllers/usuarios.controllers.js";
-import { validacionIDUsuario, validacionUsuario, validacionUsuarioPatch } from "../middlewares/validacionUsuario.js";
+import { 
+    borrarUsuarioPorID, 
+    crearUsuario, 
+    editarUsuarioPorID, 
+    listarUsuarios, 
+    obtenerUsuariosPorID, 
+    registrarUsuario } from "../controllers/usuarios.controllers.js";
+import { 
+    validacionIDUsuario, 
+    validacionUsuario, 
+    validacionUsuarioPatch } from "../middlewares/validacionUsuario.js";
 
 const router = Router()
 

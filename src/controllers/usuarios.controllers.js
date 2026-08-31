@@ -1,4 +1,5 @@
 import Usuario from "../models/usuario.js";
+import transporter from "../utils/mailer.js";
 
 export const crearUsuario = async (req, res) => {
   try {
@@ -56,11 +57,9 @@ export const borrarUsuarioPorID = async (req, res) => {
     res.status(200).json({ mensaje: "El usuario fue borrado correctamente" });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({
-        mensaje: "Ocurrio un error al intentar borrar un usuario por ID",
-      });
+    res.status(500).json({
+      mensaje: "Ocurrio un error al intentar borrar un usuario por ID",
+    });
   }
 };
 
@@ -77,19 +76,15 @@ export const editarUsuarioPorID = async (req, res) => {
         .status(404)
         .json({ mensaje: "No se encontro un usuario con el id enviado" });
     }
-    res
-      .status(200)
-      .json({
-        mensaje: "El usuario fue editado correctamente",
-        usuario: usuarioActualizado,
-      });
+    res.status(200).json({
+      mensaje: "El usuario fue editado correctamente",
+      usuario: usuarioActualizado,
+    });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({
-        mensaje: "Ocurrio un error al intentar editar un usuario por id",
-      });
+    res.status(500).json({
+      mensaje: "Ocurrio un error al intentar editar un usuario por id",
+    });
   }
 };
 export const registrarUsuario = async (req, res) => {
@@ -147,5 +142,57 @@ export const registrarUsuario = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ mensaje: "Ocurrio un error al registrar usuarios" });
+  }
+};
+export const confirmarCodigoVerificacion = async (req, res) => {
+  try {
+    const { email, codigo } = req.body;
+
+    const usuarioBuscado = await Usuario.findOne({ email });
+    if (!usuarioBuscado) {
+      return res
+        .status(404)
+        .json({ mensaje: "No se encontro ningún usuario con ese email" });
+    }
+
+    if (usuarioBuscado.verificado) {
+      return res
+        .status(400)
+        .json({ mensaje: "Esta cuenta ya esta verificada" });
+    }
+
+    if (new Date() > usuarioBuscado.fechaExpiracionCodigo) {
+      return res
+        .status(400)
+        .json({
+          mensaje:
+            "El código esta expirado. Por favor, solicita un nuevo código.",
+        });
+    }
+
+    if (usuarioBuscado.codigoVerificacion !== codigo) {
+      return res
+        .status(400)
+        .json({ mensaje: "El código de verificación es incorrecto." });
+    }
+
+    await Usuario.findByIdAndUpdate(usuarioBuscado._id, {
+      $set: { verificado: true },
+      $unset: { codigoVerificacion: 1, fechaExpiracionCodigo: 1 },
+    });
+
+    res
+      .status(200)
+      .json({
+        mensaje: "Cuenta verificada con exito. Ya puedes iniciar sesión.",
+      });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({
+        mensaje:
+          "Ocurrio un error al validar el codigo de verificacion del usuario",
+      });
   }
 };
