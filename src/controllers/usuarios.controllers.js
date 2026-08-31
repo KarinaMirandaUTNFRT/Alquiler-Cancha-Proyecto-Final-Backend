@@ -1,5 +1,9 @@
+import  Jwt  from "jsonwebtoken";
 import Usuario from "../models/usuario.js";
 import transporter from "../utils/mailer.js";
+import bcrypt from "bcryptjs";
+
+
 
 export const crearUsuario = async (req, res) => {
   try {
@@ -248,3 +252,47 @@ await transporter.sendMail({
     res.status(500).json({mensaje: 'Ocurrio un error al crear un nuevo código de verificación'})
   }
 }
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    const usuarioBuscado = await Usuario.findOne({ email });
+    if (!usuarioBuscado) {
+      return res
+        .status(401)
+        .json({ mensaje: "Credenciales invalidas - email" });
+    }
+     if (!(await bcrypt.compare(password, usuarioBuscado.password))) {
+      return res
+        .status(401)
+        .json({ mensaje: "Credenciales invalidas - password" });
+    }
+    
+    if (!usuarioBuscado.verificado) {
+      return res
+        .status(403)
+        .json({ mensaje: "Tu cuenta no fue verificada aún" });
+    }
+
+    const token = jwt.sign(
+      { id: usuarioBuscado._id, rol: usuarioBuscado.rol },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h",
+      },
+    );
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 3600000,
+    });
+    res
+      .status(200)
+      .json({ mensaje: "Login exitoso", nombre: usuarioBuscado.nombreUsuario });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: "Ocurrio un error al loguear un usuario" });
+  }
+};
