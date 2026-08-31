@@ -25,7 +25,7 @@ export const reglasProducto = [
     .isNumeric()
     .withMessage("El precio debe ser un valor numerico")
     .isFloat({ min: 1500 })
-    .withMessage("El precio debe ser desde $1050")
+    .withMessage("El precio debe ser desde $1500")
     ,
   body("imagen")
     .isString()

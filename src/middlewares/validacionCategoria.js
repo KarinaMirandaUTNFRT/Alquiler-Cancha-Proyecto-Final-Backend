@@ -7,7 +7,7 @@ export const reglasCategoriaProducto = [
     .isString()
     .withMessage("El dato debe ser un string")
     .isLength({ min: 3, max: 100 })
-    .withMessage("El nombre servicio debe contener entre 3 y 100 caracteres")
+    .withMessage("El nombre de la categoria debe contener entre 3 y 100 caracteres")
     .custom(async (valor, { req }) => {
       const categoriaBuscada = await CategoriaProducto.findOne({ nombre: valor });
       //pregunto sino existe el servicio buscado
