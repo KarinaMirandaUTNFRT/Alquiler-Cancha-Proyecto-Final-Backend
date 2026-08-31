@@ -29,7 +29,7 @@ export const obtenerUsuariosPorID = async (req, res) => {
   try {
     console.log(req.params.id);
     const usuariosBuscados = await Usuario.findById(req.params.id);
-    console.log(usuariosBuscados)
+    console.log(usuariosBuscados);
     if (!usuariosBuscados) {
       return res
         .status(404)
@@ -44,51 +44,108 @@ export const obtenerUsuariosPorID = async (req, res) => {
   }
 };
 
-
 export const borrarUsuarioPorID = async (req, res) => {
   try {
     const usuarioBorrado = await Usuario.findByIdAndDelete(req.params.id);
-   
+
     if (!usuarioBorrado) {
       return res
         .status(404)
         .json({ mensaje: "No se encontro un usuario con ese ID" });
     }
-    res.status(200).json({mensaje: 'El usuario fue borrado correctamente'});
+    res.status(200).json({ mensaje: "El usuario fue borrado correctamente" });
   } catch (error) {
     console.error(error);
     res
       .status(500)
-      .json({ mensaje: "Ocurrio un error al intentar borrar un usuario por ID" });
+      .json({
+        mensaje: "Ocurrio un error al intentar borrar un usuario por ID",
+      });
   }
 };
 
 export const editarUsuarioPorID = async (req, res) => {
   try {
     //deberia validar que el id exista y sea un id de mongodb
-    const usuarioActualizado = await Usuario.findByIdAndUpdate(req.params.id, req.body, {new:true})
+    const usuarioActualizado = await Usuario.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true },
+    );
     if (!usuarioActualizado) {
       return res
         .status(404)
         .json({ mensaje: "No se encontro un usuario con el id enviado" });
     }
-    res.status(200).json({mensaje: 'El usuario fue editado correctamente', usuario: usuarioActualizado});
+    res
+      .status(200)
+      .json({
+        mensaje: "El usuario fue editado correctamente",
+        usuario: usuarioActualizado,
+      });
   } catch (error) {
     console.error(error);
     res
       .status(500)
-      .json({ mensaje: "Ocurrio un error al intentar editar un usuario por id" });
+      .json({
+        mensaje: "Ocurrio un error al intentar editar un usuario por id",
+      });
   }
 };
-export const registrarUsuario = async (req, res )=> {
+export const registrarUsuario = async (req, res) => {
   try {
-    
+    const { nombreUsuario, email, password, rol } = req.body;
 
-    
+    const usuarioExistente = await Usuario.findOne({ email });
+    if (usuarioExistente) {
+      return res
+        .status(409)
+        .json({ mensaje: "El email enviado ya esta registrado" });
+    }
+
+    const codigoVerificacion = Math.floor(
+      100000 + Math.random() * 900000,
+    ).toString();
+
+    const tiempoExpiracion = new Date(Date.now() + 15 * 60 * 1000);
+
+    const datosUsuario = {
+      nombreUsuario,
+      email,
+      password,
+      codigoVerificacion,
+      fechaExpiracionCodigo: tiempoExpiracion,
+    };
+
+    if (rol && rol.trim() !== "") {
+      datosUsuario.rol = rol;
+    }
+
+    const usuarioNuevo = await Usuario.create(datosUsuario);
+
+    await transporter.sendMail({
+      from: '"CRUD Usuario" <no-reply@crud-usuario.com>',
+      to: email,
+      subject: "🔑 Código de Verificación de Cuenta",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 5px;">
+          <h2 style="color: #333; text-align: center;">¡Hola, ${nombreUsuario}!</h2>
+          <p style="color: #666; font-size: 16px; line-height: 1.5;">
+            Gracias por registrarte. Para activar tu cuenta y poder ingresar a la plataforma, por favor utiliza el siguiente código de verificación:
+          </p>
+          <div style="background-color: #f4f4f4; padding: 15px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; margin: 20px 0; border-radius: 4px; color: #007bff;">
+            ${codigoVerificacion}
+          </div>
+          <p style="color: #999; font-size: 12px; text-align: center;">
+            Este código vencerá en 15 minutos. Si no solicitaste este registro, puedes ignorar este correo de forma segura.
+          </p>
+        </div>
+      `,
+    });
+
+    res.status(201).json({ mensaje: "El usuario fue creado correctamente" });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({ mensaje: "Ocurrio un error al intentar registrar un usuario por id" });
+    res.status(500).json({ mensaje: "Ocurrio un error al registrar usuarios" });
   }
-}
+};

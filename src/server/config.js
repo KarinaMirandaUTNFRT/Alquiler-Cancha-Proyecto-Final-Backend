@@ -4,29 +4,19 @@ import morgan from "morgan";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 import '../database/db.js'
-<<<<<<< HEAD
-import router from "../routes/categoriasCanchas.routes.js";
-=======
->>>>>>> a951c2976167a246f3ec5c5517ee3ced4a44a179
 
 export default class Server {
-  // el objetivo del construcotr es definir las propiedad el futuro objeto
+
   constructor() {
     this.app = express();
     this.PORT = process.env.PORT || 3000;
     this.middlewares()
   }
-<<<<<<< HEAD
   
-=======
-
-  // aqui agregar el resto de los metodos del futuro objeto
-
->>>>>>> a951c2976167a246f3ec5c5517ee3ced4a44a179
   middlewares(){
-    this.app.use(cors()); // permitir conexiones remotas
-this.app.use(express.json()); // permite interpretar los datos que lleguen los datos que lleguen en la solicitud format json
-// agregar el otro middleware morgan
+    this.app.use(cors()); 
+this.app.use(express.json()); 
+
 this.app.use(morgan("dev"));
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
