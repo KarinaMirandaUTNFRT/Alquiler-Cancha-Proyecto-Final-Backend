@@ -1,15 +1,12 @@
-import  Jwt  from "jsonwebtoken";
+import Jwt from "jsonwebtoken";
 import Usuario from "../models/usuario.js";
 import transporter from "../utils/mailer.js";
 import bcrypt from "bcryptjs";
 
-
-
 export const crearUsuario = async (req, res) => {
   try {
-    
     const usuarioNuevo = new Usuario(req.body);
-  
+
     await usuarioNuevo.save();
     res.status(201).json({ mensaje: "El usuario fue creado" });
   } catch (error) {
@@ -69,7 +66,6 @@ export const borrarUsuarioPorID = async (req, res) => {
 
 export const editarUsuarioPorID = async (req, res) => {
   try {
-   
     const usuarioActualizado = await Usuario.findByIdAndUpdate(
       req.params.id,
       req.body,
@@ -166,12 +162,10 @@ export const confirmarCodigoVerificacion = async (req, res) => {
     }
 
     if (new Date() > usuarioBuscado.fechaExpiracionCodigo) {
-      return res
-        .status(400)
-        .json({
-          mensaje:
-            "El código esta expirado. Por favor, solicita un nuevo código.",
-        });
+      return res.status(400).json({
+        mensaje:
+          "El código esta expirado. Por favor, solicita un nuevo código.",
+      });
     }
 
     if (usuarioBuscado.codigoVerificacion !== codigo) {
@@ -185,47 +179,47 @@ export const confirmarCodigoVerificacion = async (req, res) => {
       $unset: { codigoVerificacion: 1, fechaExpiracionCodigo: 1 },
     });
 
-    res
-      .status(200)
-      .json({
-        mensaje: "Cuenta verificada con exito. Ya puedes iniciar sesión.",
-      });
+    res.status(200).json({
+      mensaje: "Cuenta verificada con exito. Ya puedes iniciar sesión.",
+    });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({
-        mensaje:
-          "Ocurrio un error al validar el codigo de verificacion del usuario",
-      });
+    res.status(500).json({
+      mensaje:
+        "Ocurrio un error al validar el codigo de verificacion del usuario",
+    });
   }
 };
-export const solicitarNuevoCodigo = async(req, res) =>{
-  try{
-    const {email} = req.body
-   
-    const usuarioBuscado = await Usuario.findOne({email})
-    if(!usuarioBuscado){
-      return res.status(404).json({mensaje:'No se encontró ningun usuario con el email enviado'})
+export const solicitarNuevoCodigo = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const usuarioBuscado = await Usuario.findOne({ email });
+    if (!usuarioBuscado) {
+      return res
+        .status(404)
+        .json({
+          mensaje: "No se encontró ningun usuario con el email enviado",
+        });
     }
 
-   if(usuarioBuscado.verificado){
-      return res.status(400).json({mensaje:'Esta cuenta ya esta verificada'})
+    if (usuarioBuscado.verificado) {
+      return res
+        .status(400)
+        .json({ mensaje: "Esta cuenta ya esta verificada" });
     }
 
     const codigoVerificacion = Math.floor(
       100000 + Math.random() * 900000,
-    ).toString(); 
+    ).toString();
     const tiempoExpiracion = new Date(Date.now() + 15 * 60 * 1000);
-   
-    await Usuario.findByIdAndUpdate(usuarioBuscado._id,
-      {
-        codigoVerificacion,
-        fechaExpiracionCodigo: tiempoExpiracion
-      }
-    )
 
-await transporter.sendMail({
+    await Usuario.findByIdAndUpdate(usuarioBuscado._id, {
+      codigoVerificacion,
+      fechaExpiracionCodigo: tiempoExpiracion,
+    });
+
+    await transporter.sendMail({
       from: '"CRUD Usuario" <no-reply@crud-usuario.com>',
       to: email,
       subject: "Nuevo 🔑 Código de Verificación de Cuenta",
@@ -245,29 +239,34 @@ await transporter.sendMail({
       `,
     });
 
-    res.status(200).json({mensaje: 'El nuevo código de verificación fue enviado.'})
-
-  }catch(error){
-    console.error(error)
-    res.status(500).json({mensaje: 'Ocurrio un error al crear un nuevo código de verificación'})
+    res
+      .status(200)
+      .json({ mensaje: "El nuevo código de verificación fue enviado." });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({
+        mensaje: "Ocurrio un error al crear un nuevo código de verificación",
+      });
   }
-}
+};
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    
+
     const usuarioBuscado = await Usuario.findOne({ email });
     if (!usuarioBuscado) {
       return res
         .status(401)
         .json({ mensaje: "Credenciales invalidas - email" });
     }
-     if (!(await bcrypt.compare(password, usuarioBuscado.password))) {
+    if (!(await bcrypt.compare(password, usuarioBuscado.password))) {
       return res
         .status(401)
         .json({ mensaje: "Credenciales invalidas - password" });
     }
-    
+
     if (!usuarioBuscado.verificado) {
       return res
         .status(403)
@@ -296,22 +295,38 @@ export const login = async (req, res) => {
     res.status(500).json({ mensaje: "Ocurrio un error al loguear un usuario" });
   }
 };
-export const obtenerPerfil = async(req, res) => {
-  try{
-    
-     const usuarioBuscado = await Usuario.findById(req.user.id)
-    if(!usuarioBuscado){
-      return res.status(404).json({mensaje: 'No se encontro un usuario con ese id'});
+export const obtenerPerfil = async (req, res) => {
+  try {
+    const usuarioBuscado = await Usuario.findById(req.user.id);
+    if (!usuarioBuscado) {
+      return res
+        .status(404)
+        .json({ mensaje: "No se encontro un usuario con ese id" });
     }
     const perfilUsuario = {
       nombreUsuario: usuarioBuscado.nombreUsuario,
       email: usuarioBuscado.email,
-      rol: usuarioBuscado.rol 
-    }
-    res.status(200).json(perfilUsuario)
-  }catch(error){
-    console.error(error)
-    res.status(500).json({mensaje: 'Ocurrio al obtener el perfil del usuario'})
-
+      rol: usuarioBuscado.rol,
+    };
+    res.status(200).json(perfilUsuario);
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ mensaje: "Ocurrio al obtener el perfil del usuario" });
   }
-}
+};
+export const logout = async (req, res) => {
+  try {
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 3600000,
+    });
+    res.status(200).json({ mensaje: "sesión cerrada exitosamente" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: "Ocurrio al intentar cerrar sesión" });
+  }
+};
