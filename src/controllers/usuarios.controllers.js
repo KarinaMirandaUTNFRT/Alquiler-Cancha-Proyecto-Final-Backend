@@ -1,4 +1,5 @@
-import Jwt from "jsonwebtoken";
+
+import  jwt  from "jsonwebtoken";
 import Usuario from "../models/usuario.js";
 import transporter from "../utils/mailer.js";
 import bcrypt from "bcryptjs";
