@@ -24,10 +24,7 @@ router
   .route("/:id")
   .get(validacionIdCancha, obtenerCanchasid)
   .delete([autenticador, esAdmin, validacionIdCancha], borrarCancha)
-  .put(
-    [autenticador, esAdmin, validacionIdCancha, validacionCancha],
-    editarCancha,
-  )
+  .put( [autenticador, esAdmin, validacionIdCancha, validacionCancha], editarCancha )
   .patch([autenticador, esAdmin, validacionCanchaPatch], editarCancha);
 
 export default router;
