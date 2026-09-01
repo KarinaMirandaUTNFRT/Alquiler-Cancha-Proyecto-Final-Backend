@@ -13,6 +13,7 @@ import {
     validacionIDUsuario, 
     validacionUsuario, 
     validacionUsuarioPatch } from "../middlewares/validacionUsuario.js";
+import { autenticador } from "../middlewares/authMiddleware.js";
 
 const router = Router()
 
@@ -22,5 +23,6 @@ router.route('/registro').post(registrarUsuario)
 router.route('/verificar-cuenta').post(confirmarCodigoVerificacion)
 router.route('/reenviar-codigo').post(solicitarNuevoCodigo)
 router.route("/login").post(login);
+router.route("/perfil").get(autenticador)
 
 export default router
