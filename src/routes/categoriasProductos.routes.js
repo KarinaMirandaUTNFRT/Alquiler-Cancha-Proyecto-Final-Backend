@@ -1,6 +1,16 @@
 import { Router } from "express"
-import { borrarCategoriaProductoPorID, crearCategoriaProducto, editarCategoriaProductoPorID, listarCategoriasProductos, obtenerCategoriaProductoPorID } from "../controllers/categoriaProducto.controllers.js";
-import { validacionCategoria, validacionCategoriaPatch, validacionIDCategoria } from "../middlewares/validacionCategoria.js";
+import { 
+    borrarCategoriaProductoPorID, 
+    crearCategoriaProducto, 
+    editarCategoriaProductoPorID, 
+    listarCategoriasProductos, 
+    obtenerCategoriaProductoPorID 
+} from "../controllers/categoriaProducto.controllers.js";
+import { 
+    validacionCategoria,
+     validacionCategoriaPatch, 
+     validacionIDCategoria
+     } from "../middlewares/validacionCategoria.js";
 
 const router = Router();
 
