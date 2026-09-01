@@ -7,11 +7,12 @@ import {
     obtenerCanchasid,
  } from "../controllers/cancha.controllers.js";
  import {validacionCancha, validacionCanchaPatch, validacionIdCancha} from "../middlewares/validacionCancha.js";
+import { autenticador, esAdmin } from "../middlewares/authMiddleware.js";
 
 const router = Router ()
 
 router.route("/")
-.post(validacionCancha, crearCancha)
+.post([autenticador, esAdmin, validacionCancha], crearCancha)
 .get(listarCanchas)
 
 router.route("/:id")

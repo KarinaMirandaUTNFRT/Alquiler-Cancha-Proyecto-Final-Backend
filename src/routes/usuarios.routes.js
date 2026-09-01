@@ -3,7 +3,8 @@ import {
     borrarUsuarioPorID, 
     confirmarCodigoVerificacion, 
     crearUsuario, 
-    listarUsuarios, 
+    listarUsuarios,
+    editarUsuarioPorID, 
     login, 
     obtenerPerfil, 
     obtenerUsuariosPorID, 
@@ -17,8 +18,14 @@ import { autenticador } from "../middlewares/authMiddleware.js";
 
 const router = Router()
 
-router.route('/').post(validacionUsuario,crearUsuario).get(listarUsuarios)
-router.route('/:id').get(validacionIDUsuario,obtenerUsuariosPorID).delete(validacionIDUsuario, borrarUsuarioPorID).put([validacionIDUsuario,validacionUsuario],editarUsuarioPorID).patch(validacionUsuarioPatch,editarUsuarioPorID)
+router.route('/')
+.post(validacionUsuario,crearUsuario)
+.get(listarUsuarios)
+router.route('/:id')
+.get(validacionIDUsuario,obtenerUsuariosPorID)
+.delete(validacionIDUsuario, borrarUsuarioPorID)
+.put([validacionIDUsuario,validacionUsuario],editarUsuarioPorID)
+.patch(validacionUsuarioPatch,editarUsuarioPorID)
 router.route('/registro').post(registrarUsuario)
 router.route('/verificar-cuenta').post(confirmarCodigoVerificacion)
 router.route('/reenviar-codigo').post(solicitarNuevoCodigo)
