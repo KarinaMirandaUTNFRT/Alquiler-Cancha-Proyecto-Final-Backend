@@ -14,18 +14,20 @@ import {
     validacionIDUsuario, 
     validacionUsuario, 
     validacionUsuarioPatch } from "../middlewares/validacionUsuario.js";
-import { autenticador } from "../middlewares/authMiddleware.js";
+import { autenticador, esAdmin } from "../middlewares/authMiddleware.js";
 
 const router = Router()
 
 router.route('/')
 .post(validacionUsuario,crearUsuario)
-.get(listarUsuarios)
+.get([ autenticador, esAdmin],listarUsuarios)
+
 router.route('/:id')
 .get(validacionIDUsuario,obtenerUsuariosPorID)
 .delete(validacionIDUsuario, borrarUsuarioPorID)
 .put([validacionIDUsuario,validacionUsuario],editarUsuarioPorID)
 .patch(validacionUsuarioPatch,editarUsuarioPorID)
+
 router.route('/registro').post(registrarUsuario)
 router.route('/verificar-cuenta').post(confirmarCodigoVerificacion)
 router.route('/reenviar-codigo').post(solicitarNuevoCodigo)

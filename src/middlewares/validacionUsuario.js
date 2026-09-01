@@ -10,16 +10,16 @@ export const reglasUsuario = [
     .withMessage("El nombre usuario debe contener entre 4 y 50 caracteres")
     .custom(async (valor, { req }) => {
       const usuarioBuscado = await Usuario.findOne({ nombreUsuario: valor });
-      //pregunto sino existe el servicio buscado
+      
       if (!usuarioBuscado) {
         return true;
       }
-      //verificacar si estamos editando
+      
       if(req.params?.id && usuarioBuscado._id.toString() === req.params.id){
         return true
       }
-      // si ya existe el nombre del servicio buscadooo retorno error
-      throw new Error('El nombre del servicio ingresado ya exite, dato no valido ingrese un nombre distinto al ingresado')
+      
+      throw new Error('Este mail ya pertenece a otro usuario, ingrese otro diferente')
     }),
   body("email")
     .isString()

@@ -17,8 +17,8 @@ router.route("/")
 
 router.route("/:id")
 .get(validacionIdCancha, obtenerCanchasid)
-.delete(validacionIdCancha, borrarCancha)
-.put( [validacionIdCancha, validacionCancha], editarCancha)
-.patch(validacionCanchaPatch, editarCancha)
+.delete([autenticador, esAdmin, validacionIdCancha], borrarCancha)
+.put( [autenticador, esAdmin, validacionIdCancha, validacionCancha], editarCancha)
+.patch([autenticador, esAdmin, validacionCanchaPatch], editarCancha)
 
 export default router
