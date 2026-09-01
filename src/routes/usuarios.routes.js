@@ -3,9 +3,9 @@ import {
     borrarUsuarioPorID, 
     confirmarCodigoVerificacion, 
     crearUsuario, 
-    editarUsuarioPorID, 
     listarUsuarios, 
     login, 
+    obtenerPerfil, 
     obtenerUsuariosPorID, 
     registrarUsuario, 
     solicitarNuevoCodigo} from "../controllers/usuarios.controllers.js";
@@ -23,6 +23,6 @@ router.route('/registro').post(registrarUsuario)
 router.route('/verificar-cuenta').post(confirmarCodigoVerificacion)
 router.route('/reenviar-codigo').post(solicitarNuevoCodigo)
 router.route("/login").post(login);
-router.route("/perfil").get(autenticador)
+router.route("/perfil").get(autenticador, obtenerPerfil)
 
 export default router
