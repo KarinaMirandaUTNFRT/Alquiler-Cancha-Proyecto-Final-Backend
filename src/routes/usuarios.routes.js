@@ -1,11 +1,30 @@
 import { Router } from "express";
-import { borrarUsuarioPorID, crearUsuario, editarUsuarioPorID, listarUsuarios, obtenerUsuariosPorID } from "../controllers/usuarios.controllers.js";
-import { validacionIDUsuario, validacionUsuario, validacionUsuarioPatch } from "../middlewares/validacionUsuario.js";
+import {
+   confirmarCodigoVerificacion,
+  crearUsuario,
+  listarUsuarios,
+  login,
+  obtenerPerfil,
+  registrarUsuario,
+  solicitarNuevoCodigo,
+  logout,
+} from "../controllers/usuarios.controllers.js";
 
-const router = Router()
-// http://localhost:3000/api/usuarios/
+import { autenticador, esAdmin } from "../middlewares/authMiddleware.js";
 
-router.route('/').post(validacionUsuario,crearUsuario).get(listarUsuarios)
-router.route('/:id').get(validacionIDUsuario,obtenerUsuariosPorID).delete(validacionIDUsuario, borrarUsuarioPorID).put([validacionIDUsuario,validacionUsuario],editarUsuarioPorID).patch(validacionUsuarioPatch,editarUsuarioPorID)
+const router = Router();
 
-export default router
+router
+  .route("/")
+  .post( crearUsuario)
+  .get([autenticador, esAdmin], listarUsuarios);
+
+  
+router.route("/registro").post(registrarUsuario);
+router.route("/verificar-cuenta").post(confirmarCodigoVerificacion);
+router.route("/reenviar-codigo").post(solicitarNuevoCodigo);
+router.route("/login").post(login);
+router.route("/perfil").get(autenticador, obtenerPerfil);
+router.route("/logout").post(logout);
+
+export default router;
