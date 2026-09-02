@@ -1,4 +1,6 @@
 import Cancha from "../models/cancha.js";
+import CategoriaCancha from "../models/categoriaCancha.js";
+
 
 export const crearCancha = async (req, res) => {
   try {
@@ -14,13 +16,44 @@ export const crearCancha = async (req, res) => {
 };
 export const listarCanchas = async (req, res) => {
   try {
-    const canchas = await Cancha.find().populate("categoria", "nombre descripcion");
-    res.status(200).json(canchas);
+    const { termino, pagina, cantCanchas } = req.query;
+    const paginaNumero = Math.max(1, parseInt(pagina)) || 1;
+    const limite = Math.max(1, parseInt(cantCanchas)) || 10;
+    const salto = (paginaNumero - 1) * limite;
+
+    const query = {};
+
+    if (termino && typeof termino === 'string' && termino.trim() !== '') {
+      const terminoLimpio = termino.trim();
+      const categoriasCoincidentes = await CategoriaCancha.find({
+        nombre: { $regex: terminoLimpio, $options: 'i' }
+      }).select('_id');
+
+      const idsCategorias = categoriasCoincidentes.map((cat) => cat._id);
+
+      query.$or = [
+        { nombreCancha: { $regex: terminoLimpio, $options: 'i' } },
+        { categoria: { $in: idsCategorias } }
+      ];
+    }
+    
+   const [canchas, cantidadTotal] = await Promise.all([
+      Cancha.find(query)
+        .populate("categoria", "nombre descripcion")
+        .skip(salto)
+        .limit(limite),
+      Cancha.countDocuments(query),
+    ]);
+    res.status(200).json({canchas, cantidadTotal, paginaActual: paginaNumero, totalPaginas: Math.ceil(cantidadTotal / limite) });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ mensaje: "Ocurrio un error al listar las canchas" });
-  }
+    res
+      .status(500)
+      .json({ mensaje: "Ocurrio un error al listar las canchas" });
+}
 };
+
+
 export const borrarCancha = async (req, res) => {
   try {
     const canchaEliminada = await Cancha.findByIdAndDelete(req.params.id);
