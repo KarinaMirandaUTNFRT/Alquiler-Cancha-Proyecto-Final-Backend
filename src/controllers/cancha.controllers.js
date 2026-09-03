@@ -1,19 +1,44 @@
 import Cancha from "../models/cancha.js";
 import CategoriaCancha from "../models/categoriaCancha.js";
 
-
 export const crearCancha = async (req, res) => {
+  //   try {
+  //     const nuevaCancha = new Cancha(req.body);
+  //     await nuevaCancha.save();
+  //     res
+  //       .status(201)
+  //       .json({ mensaje: "La cancha fue creada con éxito", nuevaCancha });
+  //   } catch (error) {
+  //     console.error(error);
+  //     res.status(500).json({ mensaje: "Ocurrió un error al crear la cancha" });
+  //   }
+  // };
   try {
-    const nuevaCancha = new Cancha(req.body);
-    await nuevaCancha.save();
-    res
-      .status(201)
-      .json({ mensaje: "La cancha fue creada con éxito", nuevaCancha });
+    let imagenUrl = "";
+
+    if (req.file) {
+      const resultado = await subirImagenACloudinary(req.file.buffer);
+      console.log(resultado);
+      imagenUrl = resultado.secure_url;
+    } else {
+      imagenUrl =
+        "https://images.pexels.com/photos/8481895/pexels-photo-8481895.jpeg";
+    }
+
+    const nuevocanchaData = {
+      ...req.body,
+      imagen: imagenUrl,
+    };
+
+    const canchaNuevo = new cancha(nuevocanchaData);
+    await canchaNuevo.save();
+    res.status(201).json({ mensaje: "El cancha fue creado correctamente" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ mensaje: "Ocurrió un error al crear la cancha" });
+    res.status(500).json({ mensaje: "Ocurrio un error al crear el cancha" });
   }
 };
+
 export const listarCanchas = async (req, res) => {
   try {
     const { termino, pagina, cantCanchas } = req.query;
@@ -23,36 +48,40 @@ export const listarCanchas = async (req, res) => {
 
     const query = {};
 
-    if (termino && typeof termino === 'string' && termino.trim() !== '') {
+    if (termino && typeof termino === "string" && termino.trim() !== "") {
       const terminoLimpio = termino.trim();
       const categoriasCoincidentes = await CategoriaCancha.find({
-        nombre: { $regex: terminoLimpio, $options: 'i' }
-      }).select('_id');
+        nombre: { $regex: terminoLimpio, $options: "i" },
+      }).select("_id");
 
       const idsCategorias = categoriasCoincidentes.map((cat) => cat._id);
 
       query.$or = [
-        { nombreCancha: { $regex: terminoLimpio, $options: 'i' } },
-        { categoria: { $in: idsCategorias } }
+        { nombreCancha: { $regex: terminoLimpio, $options: "i" } },
+        { categoria: { $in: idsCategorias } },
       ];
     }
-    
-   const [canchas, cantidadTotal] = await Promise.all([
+
+    const [canchas, cantidadTotal] = await Promise.all([
       Cancha.find(query)
         .populate("categoria", "nombre descripcion")
         .skip(salto)
         .limit(limite),
       Cancha.countDocuments(query),
     ]);
-    res.status(200).json({canchas, cantidadTotal, paginaActual: paginaNumero, totalPaginas: Math.ceil(cantidadTotal / limite) });
+    res
+      .status(200)
+      .json({
+        canchas,
+        cantidadTotal,
+        paginaActual: paginaNumero,
+        totalPaginas: Math.ceil(cantidadTotal / limite),
+      });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({ mensaje: "Ocurrio un error al listar las canchas" });
-}
+    res.status(500).json({ mensaje: "Ocurrio un error al listar las canchas" });
+  }
 };
-
 
 export const borrarCancha = async (req, res) => {
   try {
@@ -66,7 +95,7 @@ export const borrarCancha = async (req, res) => {
 
     res.status(200).json({
       mensaje: "La cancha fue eliminada con éxito",
-      canchaEliminada, 
+      canchaEliminada,
     });
   } catch (error) {
     console.error(error);
