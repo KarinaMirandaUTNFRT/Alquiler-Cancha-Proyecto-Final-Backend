@@ -141,10 +141,7 @@ export const obtenerHorariosDisponibles = async (req, res) => {
         turnosLibres,
         turnosOcupados: horasOcupadas,
       };
-    }); // 1. Ver qué hay guardado en la colección Reserva sin ningún filtro
-    const todasLasReservas = await Reserva.find({});
-    console.log("=== RESERVAS EN BD ===");
-    console.log(JSON.stringify(todasLasReservas, null, 2));
+    });
 
     return res.status(200).json({
       fecha,

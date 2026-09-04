@@ -8,9 +8,9 @@ const reservaSchema = new Schema(
       required: true,
     },
 
-    servicio: {
+    cancha: {
       type: Schema.Types.ObjectId,
-      ref: "servicio",
+      ref: "cancha",
       required: true,
     },
     fechaJornada: {
@@ -31,7 +31,7 @@ const reservaSchema = new Schema(
   { timestamps: true },
 );
 
-reservaSchema.index({ servicio: 1, fechaJornada: 1, horaInicio: 1, estado: 1 });
+reservaSchema.index({ cancha: 1, fechaJornada: 1, horaInicio: 1, estado: 1 });
 
 reservaSchema.virtual("fechaFormateada").get(function () {
   if (!this.fechaJornada) return null;
