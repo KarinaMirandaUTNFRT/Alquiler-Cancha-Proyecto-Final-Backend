@@ -154,3 +154,16 @@ console.log(JSON.stringify(todasLasReservas, null, 2));
     return res.status(500).json({ mensaje: 'Error al consultar disponibilidad' });
   }
 };
+export const obtenerMisReservasCancha = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const misReservas = await Reserva.find({ usuario: userId })
+      .populate('cancha', 'nombreCancha precio')
+      .sort({ fechaJornada: -1, horaInicio: 1 });
+
+    res.status(200).json(misReservas);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: 'Error al obtener las reservas' });
+  }
+};
