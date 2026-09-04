@@ -90,3 +90,67 @@ export const crearReservaCancha = async (req, res) => {
       .json({ mensaje: "Error al procesar la reserva de la cancha" });
   }
 };
+export const obtenerHorariosDisponibles = async (req, res) => {
+  try {
+    const { canchasId, canchaId, fecha } = req.query;
+
+    if (!fecha) {
+      return res.status(400).json({ mensaje: 'La fecha es obligatoria' });
+    }
+
+    // Armar el array de IDs directo desde la query
+    let listaIds = [];
+    if (canchasId) {
+      listaIds = canchasId.split(',').map((id) => id.trim());
+    } else if (canchaId) {
+      listaIds = [canchaId.trim()];
+    }
+
+    if (listaIds.length === 0) {
+      return res.status(400).json({ mensaje: 'Debes enviar al menos una cancha ' });
+    }
+
+    // 1. Obtener los canchas del catálogo
+    const canchas = await Cancha.find({ _id: { $in: listaIds } }).select('nombreCancha precio');
+
+    // 2. Buscar reservas activas usando tu campo fechaJornada
+    const reservasOcupadas = await Reserva.find({
+      cancha: { $in: listaIds },
+      fechaJornada: fecha,
+      estado: { $ne: 'cancelada' },
+    }).select('cancha horaInicio');
+
+    const todosLosTurnos = Object.keys(MAPA_TURNOS);
+
+    // 3. Mapear turnos libres y ocupados por cada cancha
+    const disponibilidadCanchas = canchas.map((srv) => {
+      const srvIdStr = srv._id.toString();
+
+      const horasOcupadas = reservasOcupadas
+        .filter((r) => r.cancha.toString() === srvIdStr)
+        .map((r) => r.horaInicio);
+
+      const turnosLibres = todosLosTurnos.filter((hora) => !horasOcupadas.includes(hora));
+
+      return {
+        canchaId: srv._id,
+        nombreCancha: srv.nombreCancha,
+        precio: srv.precio,
+        fecha,
+        turnosLibres,
+        turnosOcupados: horasOcupadas,
+      };
+    });// 1. Ver qué hay guardado en la colección Reserva sin ningún filtro
+const todasLasReservas = await Reserva.find({});
+console.log("=== RESERVAS EN BD ===");
+console.log(JSON.stringify(todasLasReservas, null, 2));
+
+    return res.status(200).json({
+      fecha,
+      canchas: disponibilidadCanchas,
+    });
+  } catch (error) {
+    console.error('Error al consultar disponibilidad:', error);
+    return res.status(500).json({ mensaje: 'Error al consultar disponibilidad' });
+  }
+};
