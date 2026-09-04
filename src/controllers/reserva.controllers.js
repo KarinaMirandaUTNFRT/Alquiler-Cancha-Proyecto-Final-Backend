@@ -93,7 +93,6 @@ export const obtenerHorariosDisponibles = async (req, res) => {
       return res.status(400).json({ mensaje: "La fecha es obligatoria" });
     }
 
-    // Armar el array de IDs directo desde la query
     let listaIds = [];
     if (canchasId) {
       listaIds = canchasId.split(",").map((id) => id.trim());
@@ -107,12 +106,10 @@ export const obtenerHorariosDisponibles = async (req, res) => {
         .json({ mensaje: "Debes enviar al menos una cancha " });
     }
 
-    // 1. Obtener los canchas del catálogo
     const canchas = await Cancha.find({ _id: { $in: listaIds } }).select(
       "nombreCancha precio",
     );
 
-    // 2. Buscar reservas activas usando tu campo fechaJornada
     const reservasOcupadas = await Reserva.find({
       cancha: { $in: listaIds },
       fechaJornada: fecha,
@@ -121,7 +118,6 @@ export const obtenerHorariosDisponibles = async (req, res) => {
 
     const todosLosTurnos = Object.keys(MAPA_TURNOS);
 
-    // 3. Mapear turnos libres y ocupados por cada cancha
     const disponibilidadCanchas = canchas.map((srv) => {
       const srvIdStr = srv._id.toString();
 
