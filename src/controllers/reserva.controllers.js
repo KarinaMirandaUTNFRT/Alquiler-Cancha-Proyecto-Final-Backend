@@ -26,12 +26,7 @@ export const crearReservaCancha = async (req, res) => {
     const { canchaId, fecha, turnos } = req.body;
     const userId = req.user.id;
 
-    if (
-      !canchaId ||
-      !fecha ||
-      !Array.isArray(turnos) ||
-      turnos.length === 0
-    ) {
+    if (!canchaId || !fecha || !Array.isArray(turnos) || turnos.length === 0) {
       return res.status(400).json({
         mensaje: "Debes enviar cancha, fecha y al menos un turno",
       });
@@ -95,30 +90,34 @@ export const obtenerHorariosDisponibles = async (req, res) => {
     const { canchasId, canchaId, fecha } = req.query;
 
     if (!fecha) {
-      return res.status(400).json({ mensaje: 'La fecha es obligatoria' });
+      return res.status(400).json({ mensaje: "La fecha es obligatoria" });
     }
 
     // Armar el array de IDs directo desde la query
     let listaIds = [];
     if (canchasId) {
-      listaIds = canchasId.split(',').map((id) => id.trim());
+      listaIds = canchasId.split(",").map((id) => id.trim());
     } else if (canchaId) {
       listaIds = [canchaId.trim()];
     }
 
     if (listaIds.length === 0) {
-      return res.status(400).json({ mensaje: 'Debes enviar al menos una cancha ' });
+      return res
+        .status(400)
+        .json({ mensaje: "Debes enviar al menos una cancha " });
     }
 
     // 1. Obtener los canchas del catálogo
-    const canchas = await Cancha.find({ _id: { $in: listaIds } }).select('nombreCancha precio');
+    const canchas = await Cancha.find({ _id: { $in: listaIds } }).select(
+      "nombreCancha precio",
+    );
 
     // 2. Buscar reservas activas usando tu campo fechaJornada
     const reservasOcupadas = await Reserva.find({
       cancha: { $in: listaIds },
       fechaJornada: fecha,
-      estado: { $ne: 'cancelada' },
-    }).select('cancha horaInicio');
+      estado: { $ne: "cancelada" },
+    }).select("cancha horaInicio");
 
     const todosLosTurnos = Object.keys(MAPA_TURNOS);
 
@@ -130,7 +129,9 @@ export const obtenerHorariosDisponibles = async (req, res) => {
         .filter((r) => r.cancha.toString() === srvIdStr)
         .map((r) => r.horaInicio);
 
-      const turnosLibres = todosLosTurnos.filter((hora) => !horasOcupadas.includes(hora));
+      const turnosLibres = todosLosTurnos.filter(
+        (hora) => !horasOcupadas.includes(hora),
+      );
 
       return {
         canchaId: srv._id,
@@ -140,30 +141,80 @@ export const obtenerHorariosDisponibles = async (req, res) => {
         turnosLibres,
         turnosOcupados: horasOcupadas,
       };
-    });// 1. Ver qué hay guardado en la colección Reserva sin ningún filtro
-const todasLasReservas = await Reserva.find({});
-console.log("=== RESERVAS EN BD ===");
-console.log(JSON.stringify(todasLasReservas, null, 2));
+    }); // 1. Ver qué hay guardado en la colección Reserva sin ningún filtro
+    const todasLasReservas = await Reserva.find({});
+    console.log("=== RESERVAS EN BD ===");
+    console.log(JSON.stringify(todasLasReservas, null, 2));
 
     return res.status(200).json({
       fecha,
       canchas: disponibilidadCanchas,
     });
   } catch (error) {
-    console.error('Error al consultar disponibilidad:', error);
-    return res.status(500).json({ mensaje: 'Error al consultar disponibilidad' });
+    console.error("Error al consultar disponibilidad:", error);
+    return res
+      .status(500)
+      .json({ mensaje: "Error al consultar disponibilidad" });
   }
 };
 export const obtenerMisReservasCancha = async (req, res) => {
   try {
     const userId = req.user.id;
     const misReservas = await Reserva.find({ usuario: userId })
-      .populate('cancha', 'nombreCancha precio')
+      .populate("cancha", "nombreCancha precio")
       .sort({ fechaJornada: -1, horaInicio: 1 });
 
     res.status(200).json(misReservas);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ mensaje: 'Error al obtener las reservas' });
+    res.status(500).json({ mensaje: "Error al obtener las reservas" });
+  }
+};
+export const cancelarReservaCancha = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId =
+      req.usuario?._id ||
+      req.usuario?.id ||
+      req.user?.id ||
+      req.user?._id ||
+      req.uid;
+
+    const reserva = await Reserva.findOne({ _id: id, usuario: userId });
+
+    if (!reserva) {
+      return res.status(404).json({
+        mensaje:
+          "Reserva no encontrada o no tienes autorización para cancelarla",
+      });
+    }
+
+    if (reserva.estado === "cancelada") {
+      return res
+        .status(400)
+        .json({ mensaje: "Esta reserva ya está cancelada" });
+    }
+
+    const ahora = new Date();
+    const fechaHoraTurno = new Date(
+      `${reserva.fechaJornada}T${reserva.horaInicio}:00`,
+    );
+    if (fechaHoraTurno < ahora) {
+      return res.status(400).json({
+        mensaje:
+          "No se puede cancelar una reserva cuya fecha u hora ya ha transcurrido",
+      });
+    }
+
+    reserva.estado = "cancelada";
+    await reserva.save();
+
+    res.status(200).json({
+      mensaje: "Reserva cancelada correctamente. El horario quedó disponible.",
+      reserva,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: "Error al cancelar la reserva" });
   }
 };
