@@ -10,22 +10,12 @@ const carritoSchema = new Schema(
     },
     items: [
       {
-        cancha: {
-          type: Schema.Types.ObjectId,
-          ref: "cancha",
-          required: true,
-        },
-        cantidadCancha: {
-          type: Number,
-          default: 1,
-          min: 1,
-        },
         producto: {
           type: Schema.Types.ObjectId,
           ref: "producto",
           required: true,
         },
-        cantidadProducto: {
+        cantidad: {
           type: Number,
           default: 1,
           min: 1,
@@ -38,6 +28,6 @@ const carritoSchema = new Schema(
   },
 );
 
-const Carrito = mongoose.model('carrito', carritoSchema)
+const Carrito = mongoose.model("carrito", carritoSchema);
 
-export default Carrito
+export default Carrito;

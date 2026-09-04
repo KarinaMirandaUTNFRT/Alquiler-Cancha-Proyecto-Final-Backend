@@ -50,7 +50,7 @@ export const obtenerCarrito = async (req, res) => {
     const userId = req.user.id;
     const carrito = await buscarOCrearCarrito(userId);
 
-    await carrito.populate("items.cancha", "nombreCancha precio imagen");
+    await carrito.populate("items.producto", "nombreProducto precio imagen");
 
     res.status(200).json(carrito);
   } catch (error) {
@@ -91,7 +91,7 @@ export const restarCantidad = async (req, res) => {
     if (itemIndex === -1) {
       return res
         .status(404)
-        .json({ mensaje: "El producto no se encuentra ene l carrito" });
+        .json({ mensaje: "El producto no se encuentra en el carrito" });
     }
 
     //restar la cantidad del producto
