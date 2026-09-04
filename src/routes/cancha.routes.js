@@ -17,14 +17,14 @@ const router = Router();
 
 router
   .route("/")
-  .post([autenticador, esAdmin, validacionCancha], crearCancha)
+  .post([autenticador, esAdmin,upload.single('imagen'), errorMulter, validacionCancha], crearCancha)
   .get(listarCanchas);
 
 router
   .route("/:id")
   .get(validacionIdCancha, obtenerCanchasid)
   .delete([autenticador, esAdmin, validacionIdCancha], borrarCancha)
-  .put( [autenticador, esAdmin, validacionIdCancha, validacionCancha], editarCancha )
+  .put( [autenticador, esAdmin, upload.single('imagen'), errorMulter, validacionIdCancha, validacionCancha], editarCancha )
   .patch([autenticador, esAdmin, validacionCanchaPatch], editarCancha);
 
 export default router;
