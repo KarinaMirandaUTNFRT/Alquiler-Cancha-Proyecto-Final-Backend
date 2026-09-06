@@ -20,18 +20,18 @@ export const crearPreferenciaPago = async (req, res) => {
       const subtotal = item.producto.precio * item.cantidad;
       montoTotal += subtotal;
       return {
-        id: item.servicio._id.toString(),
-        title: item.servicio.nombreServicio,
-        unit_price: Number(item.servicio.precio),
+        id: item.producto._id.toString(),
+        title: item.producto.nombreProducto,
+        unit_price: Number(item.producto.precio),
         quantity: Number(item.cantidad),
         currency_id: "ARS",
         picture_url: item.producto.imagen,
       };
     });
     const itemsOrden = carrito.items.map((item) => ({
-      producto: item.servicio._id,
+      producto: item.producto._id,
       nombreProducto: item.producto.nombreProducto,
-      precioUnitario: item.prodcuto.precio,
+      precioUnitario: item.producto.precio,
       cantidad: item.cantidad,
     }));
 
@@ -50,7 +50,7 @@ export const crearPreferenciaPago = async (req, res) => {
         items: itemsMP,
         external_reference: nuevaOrden._id.toString(),
         //todo: aqui trabajar con el webhook
-        notification_url: `${process.env.BACKEND_URL}/api/pago/webhook`,
+        notification_url: `${process.env.BACKEND_URL}/api/pagoProducto/webhook`,
         back_urls: {
           success: `${process.env.PAYMENT_FRONTEND_URL}/checkout/resultado?status=success`,
           failure: `${process.env.PAYMENT_FRONTEND_URL}/checkout/resultado?status=failure`,
@@ -87,7 +87,7 @@ export const recibirWebhook = async (req, res) => {
 
       // 3. Si fue aprobado, actualizamos nuestra Orden en MongoDB usando el external_reference
       if (pagoData.status === "approved") {
-        const ordenActualizada = await Orden.findByIdAndUpdate(
+        const ordenActualizada = await OrdenProducto.findByIdAndUpdate(
           pagoData.external_reference,
           {
             estado: "aprobado",

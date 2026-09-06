@@ -5,6 +5,7 @@ import productosRouter from './productos.routes.js'
 import categoriaProductosRouter from './categoriasProductos.routes.js'
 import usuariosRouter from "./usuarios.routes.js"
 import carritoRouter from "./carrito.routes.js"
+import pagoProductosRouter from "./pagoProducto.routes.js"
 
 
 const router = Router()
@@ -14,6 +15,7 @@ router.use('/productos', productosRouter)
 router.use('/categoriaProductos', categoriaProductosRouter)
 router.use('/usuarios', usuariosRouter)
 router.use('/carrito', carritoRouter)
+router.use('/pagoProducto', pagoProductosRouter)
 
 
 export default router;
