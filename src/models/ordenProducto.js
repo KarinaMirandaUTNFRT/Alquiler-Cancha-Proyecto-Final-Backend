@@ -11,7 +11,7 @@ const ordenProductoSchema = new Schema(
       {
         producto: {
           type: Schema.Types.ObjectId,
-          ref: "servicio",
+          ref: "producto",
           required: true,
         },
         nombreProducto:{
