@@ -1,4 +1,6 @@
 import { Router } from "express";
+import upload from "../middlewares/upload.js";
+import errorMulter from 'multer';
 import {
   crearCancha,
   listarCanchas,
