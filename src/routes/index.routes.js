@@ -5,6 +5,9 @@ import productosRouter from './productos.routes.js'
 import categoriaProductosRouter from './categoriasProductos.routes.js'
 import usuariosRouter from "./usuarios.routes.js"
 import carritoRouter from "./carrito.routes.js"
+import pagoProductosRouter from "./pagoProducto.routes.js"
+import pagoCanchasRouter from "./pagoCancha.routes.js"
+
 import reservaRouter from "./reserva.routes.js"
 
 const router = Router()
@@ -14,6 +17,8 @@ router.use('/productos', productosRouter)
 router.use('/categoriaProductos', categoriaProductosRouter)
 router.use('/usuarios', usuariosRouter)
 router.use('/carrito', carritoRouter)
+router.use('/pagoProducto', pagoProductosRouter)
+router.use('/pagoCancha', pagoCanchasRouter)
 router.use("/reservas", reservaRouter);
 
 
