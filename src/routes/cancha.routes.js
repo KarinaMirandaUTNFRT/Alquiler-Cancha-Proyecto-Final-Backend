@@ -12,6 +12,8 @@ import {
   validacionIdCancha,
 } from "../middlewares/validacionCancha.js";
 import { autenticador, esAdmin } from "../middlewares/authMiddleware.js";
+import upload from "../middlewares/upload.js";
+import errorMulter from "multer";
 
 const router = Router();
 
