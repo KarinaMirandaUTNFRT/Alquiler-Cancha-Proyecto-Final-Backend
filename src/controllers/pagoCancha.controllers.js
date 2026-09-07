@@ -1,5 +1,5 @@
 import { MercadoPagoConfig, Preference, Payment } from "mercadopago";
-import OrdenCancha from "../models/ordenCancha";
+import OrdenCancha from "../models/ordenCancha.js";
 
 const client = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN,
