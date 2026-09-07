@@ -8,6 +8,7 @@ import carritoRouter from "./carrito.routes.js"
 import pagoProductosRouter from "./pagoProducto.routes.js"
 import pagoCanchasRouter from "./pagoCancha.routes.js"
 
+import reservaRouter from "./reserva.routes.js"
 
 const router = Router()
 router.use("/canchas", canchasRouter);
@@ -18,6 +19,7 @@ router.use('/usuarios', usuariosRouter)
 router.use('/carrito', carritoRouter)
 router.use('/pagoProducto', pagoProductosRouter)
 router.use('/pagoCancha', pagoCanchasRouter)
+router.use("/reservas", reservaRouter);
 
 
 export default router;
