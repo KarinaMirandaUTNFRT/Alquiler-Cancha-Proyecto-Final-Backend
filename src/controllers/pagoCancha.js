@@ -1,4 +1,4 @@
-import { MercadoPagoConfig, Preference } from "mercadopago";
+import { MercadoPagoConfig, Preference, Payment } from "mercadopago";
 import OrdenCancha from "../models/ordenCancha";
 
 const client = new MercadoPagoConfig({
@@ -83,5 +83,35 @@ export const crearPreferenciaPagoDirecta = async (req, res) => {
       mensaje: "Ocurrió un error al crear la preferencia de pago",
       error: error.message,
     });
+  }
+};
+
+export const recibirWebhook = async (req, res) => {
+  try {
+    console.log("🚨 CUIDADO: El Webhook se está ejecutando!");
+    const { type, "data.id": paymentId } = req.query;
+
+    if (type === "payment" && paymentId) {
+      const payment = new Payment(client);
+      const pagoData = await payment.get({ id: paymentId });
+
+      // 3. Si fue aprobado, actualizamos nuestra Orden en MongoDB usando el external_reference
+      if (pagoData.status === "approved") {
+        const ordenActualizada = await OrdenCancha.findByIdAndUpdate(
+          pagoData.external_reference,
+          {
+            estado: "aprobado",
+            paymentId: paymentId,
+          },
+          { new: true },
+        );
+        await OrdenCancha.save();
+      }
+    }
+
+    res.sendStatus(200);
+  } catch (error) {
+    console.error("❌ Error en Webhook:", error.message);
+    res.status(500).json({ error: error.message });
   }
 };
