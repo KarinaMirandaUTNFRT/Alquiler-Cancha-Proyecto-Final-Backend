@@ -7,7 +7,6 @@ export const crearCancha = async (req, res) => {
 
     if (req.file) {
       const resultado = await subirImagenACloudinary(req.file.buffer);
-      console.log(resultado);
       imagenUrl = resultado.secure_url;
     } else {
       imagenUrl =
@@ -19,7 +18,7 @@ export const crearCancha = async (req, res) => {
       imagen: imagenUrl,
     };
 
-    const canchaNuevo = new cancha(nuevocanchaData);
+    const canchaNuevo = new Cancha(nuevocanchaData);
     await canchaNuevo.save();
     res.status(201).json({ mensaje: "El cancha fue creado correctamente" });
   } catch (error) {

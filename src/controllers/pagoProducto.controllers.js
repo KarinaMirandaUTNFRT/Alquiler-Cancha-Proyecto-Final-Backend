@@ -1,6 +1,7 @@
 import { MercadoPagoConfig, Preference, Payment } from "mercadopago";
 import buscarOCrearCarrito from "../utils/buscarCarrito.js";
 import OrdenProducto from "../models/ordenProducto.js";
+import OrdenCancha from "../models/ordenCancha.js";
 
 const client = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN,
@@ -75,19 +76,20 @@ export const crearPreferenciaPago = async (req, res) => {
       .json({ mensaje: "Ocurrio un error al crear la preferencia de pago" });
   }
 };
+
+
 export const recibirWebhook = async (req, res) => {
   try {
-    console.log("🚨 CUIDADO: El Webhook se está ejecutando!"); // 👉 Para confirmar la entrada
+    console.log("🚨 CUIDADO: El Webhook se está ejecutando!"); 
     const { type, "data.id": paymentId } = req.query;
-    // 1. Verificamos que sea un evento de pago
+  
     if (type === "payment" && paymentId) {
-      // 2. Consultamos el estado del pago a Mercado Pago
+
       const payment = new Payment(client);
       const pagoData = await payment.get({ id: paymentId });
 
-      // 3. Si fue aprobado, actualizamos nuestra Orden en MongoDB usando el external_reference
       if (pagoData.status === "approved") {
-        const ordenActualizada = await OrdenProducto.findByIdAndUpdate(
+        const ordenActualizada = await OrdenCancha.findByIdAndUpdate(
           pagoData.external_reference,
           {
             estado: "aprobado",
@@ -95,15 +97,8 @@ export const recibirWebhook = async (req, res) => {
           },
           { new: true },
         );
-        // 2. Reutilizamos la lógica de vaciarCarrito usando el ID de usuario de la orden
-        if (ordenActualizada) {
-          const carrito = await buscarOCrearCarrito(ordenActualizada.usuario);
-          carrito.items = [];
-          await carrito.save()
-        }
       }
     }
-    // 4. Confirmar recepción a Mercado Pago (HTTP 200)
     res.sendStatus(200);
   } catch (error) {
     console.error("❌ Error en Webhook:", error.message);
