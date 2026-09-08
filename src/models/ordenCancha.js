@@ -9,6 +9,10 @@ const ordenCanchaSchema = new Schema(
     },
     items: [
       {
+        reserva: {
+      type: Schema.Types.ObjectId,
+      ref: "reserva",
+        },
         cancha: {
           type: Schema.Types.ObjectId,
           ref: "cancha",
