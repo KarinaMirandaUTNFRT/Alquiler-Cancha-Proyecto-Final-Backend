@@ -8,8 +8,8 @@ const UsuarioSchema = new Schema(
       required: true,
       minLength: 4,
       maxLength: 50,
-      trim: true
-  },
+      trim: true,
+    },
     email: {
       type: String,
       required: true,
@@ -25,38 +25,38 @@ const UsuarioSchema = new Schema(
       required: true,
       validate: {
         validator: (valor) => {
-        //   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&])[A-Za-z\d$@$!%*?&]{8,15}/
-         /^(?=.*\d)(?=.*[\u0021-\u002b\u003c-\u0040])(?=.*[A-Z])(?=.*[a-z])\S{8,50}$/.test(valor);
+          /^(?=.*\d)(?=.*[\u0021-\u002b\u003c-\u0040])(?=.*[A-Z])(?=.*[a-z])\S{8,50}$/.test(
+            valor,
+          );
         },
       },
     },
     rol: {
       type: String,
       required: true,
-      enum: ['Admin', 'Cliente'],
-      default:'Cliente'
+      enum: ["Admin", "Cliente"],
+      default: "Cliente",
     },
     verificado: {
       type: Boolean,
       default: false,
     },
-    codigoVerificacion:{
-      type: String
+    codigoVerificacion: {
+      type: String,
     },
-    fechaExpiracionCodigo:{
-      type: Date
-    }
+    fechaExpiracionCodigo: {
+      type: Date,
+    },
   },
   {
     timestamps: true,
   },
-
 );
 UsuarioSchema.pre("save", async function () {
   const usuario = this;
-  // preguntar si el password no fue modificado
+
   if (!usuario.isModified("password")) return;
-  // aqui hasheamos el password
+
   try {
     const salt = await bcrypt.genSalt(10);
     usuario.password = await bcrypt.hash(usuario.password, salt);
@@ -66,6 +66,6 @@ UsuarioSchema.pre("save", async function () {
   }
 });
 
-const Usuario =  mongoose.model('usuario',UsuarioSchema)
+const Usuario = mongoose.model("usuario", UsuarioSchema);
 
-export default Usuario
+export default Usuario;

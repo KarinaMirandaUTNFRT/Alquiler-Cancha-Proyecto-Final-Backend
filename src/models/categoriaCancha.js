@@ -21,6 +21,9 @@ const categoriaCanchaSchema = new Schema(
   },
 );
 
-const CategoriaCancha = mongoose.model("categoriaCancha", categoriaCanchaSchema);
+const CategoriaCancha = mongoose.model(
+  "categoriaCancha",
+  categoriaCanchaSchema,
+);
 
 export default CategoriaCancha;

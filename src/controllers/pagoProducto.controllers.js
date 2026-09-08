@@ -49,7 +49,7 @@ export const crearPreferenciaPago = async (req, res) => {
       body: {
         items: itemsMP,
         external_reference: nuevaOrden._id.toString(),
-        //todo: aqui trabajar con el webhook
+
         notification_url: `${process.env.BACKEND_URL}/api/pagoProducto/webhook`,
         back_urls: {
           success: `${process.env.PAYMENT_FRONTEND_URL}/checkout/resultado?status=success`,
@@ -64,7 +64,7 @@ export const crearPreferenciaPago = async (req, res) => {
 
     return res.status(201).json({
       mensaje: "Preferencia de pago creada con exito",
-      init_point: result.init_point, // redireccion MP
+      init_point: result.init_point,
       sandbox_init_point: result.sandbox_init_point,
       ordenId: nuevaOrden._id,
     });
@@ -77,15 +77,13 @@ export const crearPreferenciaPago = async (req, res) => {
 };
 export const recibirWebhook = async (req, res) => {
   try {
-    console.log("🚨 CUIDADO: El Webhook se está ejecutando!"); // 👉 Para confirmar la entrada
+    console.log("🚨 CUIDADO: El Webhook se está ejecutando!");
     const { type, "data.id": paymentId } = req.query;
-    // 1. Verificamos que sea un evento de pago
+
     if (type === "payment" && paymentId) {
-      // 2. Consultamos el estado del pago a Mercado Pago
       const payment = new Payment(client);
       const pagoData = await payment.get({ id: paymentId });
 
-      // 3. Si fue aprobado, actualizamos nuestra Orden en MongoDB usando el external_reference
       if (pagoData.status === "approved") {
         const ordenActualizada = await OrdenProducto.findByIdAndUpdate(
           pagoData.external_reference,
@@ -95,15 +93,15 @@ export const recibirWebhook = async (req, res) => {
           },
           { new: true },
         );
-        // 2. Reutilizamos la lógica de vaciarCarrito usando el ID de usuario de la orden
+
         if (ordenActualizada) {
           const carrito = await buscarOCrearCarrito(ordenActualizada.usuario);
           carrito.items = [];
-          await carrito.save()
+          await carrito.save();
         }
       }
     }
-    // 4. Confirmar recepción a Mercado Pago (HTTP 200)
+
     res.sendStatus(200);
   } catch (error) {
     console.error("❌ Error en Webhook:", error.message);

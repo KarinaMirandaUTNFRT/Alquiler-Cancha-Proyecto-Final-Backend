@@ -2,7 +2,6 @@ import CategoriaCancha from "../models/categoriaCancha.js";
 
 export const crearCategoriaCancha = async (req, res) => {
   try {
-    //todo: agregar el middlware para validar los datos del body
     const categoriaNueva = new CategoriaCancha(req.body);
     await categoriaNueva.save();
     res.status(201).json({ mensaje: "se creo la categoria correctamente" });
@@ -17,30 +16,29 @@ export const crearCategoriaCancha = async (req, res) => {
 export const listarCategoriasCanchas = async (req, res) => {
   try {
     const categorias = await CategoriaCancha.find();
-    res.status(200).json(categorias)
+    res.status(200).json(categorias);
   } catch (error) {
     console.error(error);
     res
       .status(500)
       .json({ mensaje: "Se produjo un error al listar las categorias" });
   }
-}
+};
 export const borrarCategoria = async (req, res) => {
   try {
-    
-    const categoriaEliminada = await CategoriaCancha.findByIdAndDelete(req.params.id);
+    const categoriaEliminada = await CategoriaCancha.findByIdAndDelete(
+      req.params.id,
+    );
 
-  
     if (!categoriaEliminada) {
       return res
         .status(404)
         .json({ mensaje: "No se encontró la categoria que querés borrar" });
     }
 
-   
     res.status(200).json({
       mensaje: "La categoria fue eliminada con éxito",
-      categoriaEliminada, // Opcional: devolvemos el objeto que se borró
+      categoriaEliminada,
     });
   } catch (error) {
     console.error(error);
@@ -75,7 +73,7 @@ export const editarCategoria = async (req, res) => {
 export const obtenerCategoriaCanchaPorID = async (req, res) => {
   try {
     console.log(req.params.id);
-    const categoriaBuscada = await Categoria.findById(req.params.id)
+    const categoriaBuscada = await Categoria.findById(req.params.id);
     if (!categoriaBuscada) {
       return res
         .status(404)
