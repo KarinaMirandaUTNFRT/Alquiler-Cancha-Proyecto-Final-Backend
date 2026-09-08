@@ -65,7 +65,9 @@ export const crearPreferenciaReserva = async (req, res) => {
     await nuevaOrden.save();
 
     const backendUrl = process.env.BACKEND_URL?.trim().replace(/\/$/, "");
-    const frontendUrl = (process.env.PAYMENT_FRONTEND_URL?.trim() || "http://localhost:5173").replace(/\/$/, "");
+    const frontendUrl = (
+      process.env.PAYMENT_FRONTEND_URL?.trim() || "http://localhost:5173"
+    ).replace(/\/$/, "");
 
     const preference = new Preference(client);
 
@@ -87,7 +89,7 @@ export const crearPreferenciaReserva = async (req, res) => {
 
     await Reserva.updateMany(
       { _id: { $in: idsAProcesar } },
-      { $set: { preferenceId: result.id, estado: "pendiente" } }
+      { $set: { preferenceId: result.id, estado: "pendiente" } },
     );
 
     return res.status(201).json({
@@ -107,10 +109,10 @@ export const crearPreferenciaReserva = async (req, res) => {
 
 export const recibirWebhookReserva = async (req, res) => {
   try {
-    const topic = req.query.topic || req.query.type || req.body?.type || req.body?.action;
-    const paymentId = req.query["data.id"] || req.body?.data?.id || req.query.id;
-
-    console.log("📥 [Webhook Inbound]:", { topic, paymentId, query: req.query, body: req.body });
+    const topic =
+      req.query.topic || req.query.type || req.body?.type || req.body?.action;
+    const paymentId =
+      req.query["data.id"] || req.body?.data?.id || req.query.id;
 
     if (topic === "merchant_order") {
       return res.status(200).send("merchant_order descartada");
@@ -120,31 +122,28 @@ export const recibirWebhookReserva = async (req, res) => {
       const payment = new Payment(client);
       const pagoData = await payment.get({ id: paymentId });
 
-      console.log("💳 [Estado de Pago MP]:", {
-        status: pagoData.status,
-        external_reference: pagoData.external_reference,
-      });
-
       if (pagoData.status === "approved") {
         const ordenId = pagoData.external_reference?.trim();
 
         if (ordenId) {
-         
           const ordenActualizada = await OrdenCancha.findByIdAndUpdate(
             ordenId,
             {
               estado: "aprobado",
               paymentId: paymentId.toString(),
             },
-            { new: true }
+            { new: true },
           );
 
           if (ordenActualizada) {
-            console.log("✅ OrdenCancha aprobada con éxito:", ordenActualizada._id);
+            console.log(
+              "✅ OrdenCancha aprobada con éxito:",
+              ordenActualizada._id,
+            );
 
             await Reserva.updateMany(
               { preferenceId: ordenActualizada.preferenceId },
-              { $set: { estado: "confirmada" } }
+              { $set: { estado: "confirmada" } },
             );
 
             console.log("✅ Reservas asociadas confirmadas.");
