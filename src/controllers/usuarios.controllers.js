@@ -1,9 +1,7 @@
-
-import  jwt  from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import Usuario from "../models/usuario.js";
 import transporter from "../utils/mailer.js";
 import bcrypt from "bcryptjs";
-
 
 export const crearUsuario = async (req, res) => {
   try {
@@ -137,11 +135,9 @@ export const solicitarNuevoCodigo = async (req, res) => {
 
     const usuarioBuscado = await Usuario.findOne({ email });
     if (!usuarioBuscado) {
-      return res
-        .status(404)
-        .json({
-          mensaje: "No se encontró ningun usuario con el email enviado",
-        });
+      return res.status(404).json({
+        mensaje: "No se encontró ningun usuario con el email enviado",
+      });
     }
 
     if (usuarioBuscado.verificado) {
@@ -185,11 +181,9 @@ export const solicitarNuevoCodigo = async (req, res) => {
       .json({ mensaje: "El nuevo código de verificación fue enviado." });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({
-        mensaje: "Ocurrio un error al crear un nuevo código de verificación",
-      });
+    res.status(500).json({
+      mensaje: "Ocurrio un error al crear un nuevo código de verificación",
+    });
   }
 };
 export const login = async (req, res) => {

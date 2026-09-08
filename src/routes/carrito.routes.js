@@ -15,6 +15,6 @@ router
   .get(autenticador, obtenerCarrito)
   .delete(autenticador, vaciarCarrito);
 
-  router.route('/restar/:productoId').patch(autenticador,restarCantidad)
+router.route("/restar/:productoId").patch(autenticador, restarCantidad);
 
 export default router;

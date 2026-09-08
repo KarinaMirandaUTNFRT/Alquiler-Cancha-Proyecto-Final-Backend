@@ -1,6 +1,6 @@
 import { Router } from "express";
 import {
-   confirmarCodigoVerificacion,
+  confirmarCodigoVerificacion,
   crearUsuario,
   listarUsuarios,
   login,
@@ -16,10 +16,9 @@ const router = Router();
 
 router
   .route("/")
-  .post( crearUsuario)
+  .post(crearUsuario)
   .get([autenticador, esAdmin], listarUsuarios);
 
-  
 router.route("/registro").post(registrarUsuario);
 router.route("/verificar-cuenta").post(confirmarCodigoVerificacion);
 router.route("/reenviar-codigo").post(solicitarNuevoCodigo);
