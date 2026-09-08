@@ -1,9 +1,9 @@
 import { MercadoPagoConfig, Preference, Payment } from "mercadopago";
 import { Reserva } from "../models/reserva.js";
-import OrdenCancha from "../models/ordenCancha.js"; 
+import OrdenCancha from "../models/ordenCancha.js";
 
 const client = new MercadoPagoConfig({
-  accessToken: process.env.MP_ACCESS_TOKEN,
+  accessToken: process.env.MP_ACCESS_TOKEN?.trim(),
 });
 
 export const crearPreferenciaReserva = async (req, res) => {
@@ -19,7 +19,6 @@ export const crearPreferenciaReserva = async (req, res) => {
       });
     }
 
-    
     const reservas = await Reserva.find({
       _id: { $in: idsAProcesar },
       usuario: userId,
@@ -31,7 +30,6 @@ export const crearPreferenciaReserva = async (req, res) => {
       });
     }
 
-    
     let montoTotal = 0;
     const itemsMP = [];
     const itemsOrden = [];
@@ -40,7 +38,6 @@ export const crearPreferenciaReserva = async (req, res) => {
       const precioUnitario = Number(reserva.cancha.precio);
       montoTotal += precioUnitario;
 
-     
       itemsMP.push({
         id: reserva._id.toString(),
         title: `Reserva ${reserva.cancha.nombreCancha} (${reserva.fechaJornada} - ${reserva.horaInicio} hs)`,
@@ -49,7 +46,6 @@ export const crearPreferenciaReserva = async (req, res) => {
         currency_id: "ARS",
       });
 
-     
       itemsOrden.push({
         reserva: reserva._id,
         cancha: reserva.cancha._id,
@@ -59,7 +55,6 @@ export const crearPreferenciaReserva = async (req, res) => {
       });
     }
 
-   
     const nuevaOrden = new OrdenCancha({
       usuario: userId,
       items: itemsOrden,
@@ -67,33 +62,32 @@ export const crearPreferenciaReserva = async (req, res) => {
       estado: "pendiente",
     });
 
-    await nuevaOrden.save(); 
+    await nuevaOrden.save();
 
-    
+    const backendUrl = process.env.BACKEND_URL?.trim().replace(/\/$/, "");
+    const frontendUrl = (process.env.PAYMENT_FRONTEND_URL?.trim() || "http://localhost:5173").replace(/\/$/, "");
+
     const preference = new Preference(client);
 
-    const result = await preference.create({
-      body: {
-        items: itemsMP,
-        external_reference: nuevaOrden._id.toString(), 
-        notification_url: `${process.env.BACKEND_URL}/api/pagoCancha/webhook`,
-        back_urls: {
-          success: `${process.env.PAYMENT_FRONTEND_URL}/checkout/resultado?status=success`,
-          failure: `${process.env.PAYMENT_FRONTEND_URL}/checkout/resultado?status=failure`,
-          pending: `${process.env.PAYMENT_FRONTEND_URL}/checkout/resultado?status=pending`,
-        },
-        auto_return: "approved",
+    const preferenceData = {
+      items: itemsMP,
+      external_reference: nuevaOrden._id.toString(),
+      notification_url: `${backendUrl}/api/pagoCancha/webhook`,
+      back_urls: {
+        success: `${frontendUrl}/checkout/resultado?status=success`,
+        failure: `${frontendUrl}/checkout/resultado?status=failure`,
+        pending: `${frontendUrl}/checkout/resultado?status=pending`,
       },
-    });
+    };
 
-    
+    const result = await preference.create({ body: preferenceData });
+
     nuevaOrden.preferenceId = result.id;
     await nuevaOrden.save();
 
-   
     await Reserva.updateMany(
       { _id: { $in: idsAProcesar } },
-      { $set: { preferenceId: result.id } },
+      { $set: { preferenceId: result.id, estado: "pendiente" } }
     );
 
     return res.status(201).json({
@@ -110,46 +104,53 @@ export const crearPreferenciaReserva = async (req, res) => {
     });
   }
 };
+
 export const recibirWebhookReserva = async (req, res) => {
   try {
-    const topic = req.query.topic || req.query.type || req.body?.type;
-    const paymentId =
-      req.query["data.id"] || req.body?.data?.id || req.query.id;
+    const topic = req.query.topic || req.query.type || req.body?.type || req.body?.action;
+    const paymentId = req.query["data.id"] || req.body?.data?.id || req.query.id;
 
-    if (topic !== "payment") {
-      return res
-        .status(200)
-        .send("Notificación no corresponde a pago, ignorada.");
+    console.log("📥 [Webhook Inbound]:", { topic, paymentId, query: req.query, body: req.body });
+
+    if (topic === "merchant_order") {
+      return res.status(200).send("merchant_order descartada");
     }
 
     if (paymentId) {
       const payment = new Payment(client);
       const pagoData = await payment.get({ id: paymentId });
 
+      console.log("💳 [Estado de Pago MP]:", {
+        status: pagoData.status,
+        external_reference: pagoData.external_reference,
+      });
+
       if (pagoData.status === "approved") {
-        const ordenId = pagoData.external_reference;
+        const ordenId = pagoData.external_reference?.trim();
 
-        const ordenActualizada = await OrdenCancha.findByIdAndUpdate(
-          ordenId,
-          {
-            estado: "aprobado",
-            paymentId: paymentId.toString(),
-          },
-          { new: true },
-        );
-        if (ordenActualizada) {
-          console.log(
-            "✅ OrdenCancha aprobada con éxito:",
-            ordenActualizada._id,
+        if (ordenId) {
+         
+          const ordenActualizada = await OrdenCancha.findByIdAndUpdate(
+            ordenId,
+            {
+              estado: "aprobado",
+              paymentId: paymentId.toString(),
+            },
+            { new: true }
           );
 
-          await Reserva.updateMany(
-            { preferenceId: ordenActualizada.preferenceId },
-            { $set: { estado: "confirmada" } },
-          );
-          console.log("✅ Reservas asociadas confirmadas.");
-        } else {
-          console.warn("⚠️ No se encontró OrdenCancha con el ID:", ordenId);
+          if (ordenActualizada) {
+            console.log("✅ OrdenCancha aprobada con éxito:", ordenActualizada._id);
+
+            await Reserva.updateMany(
+              { preferenceId: ordenActualizada.preferenceId },
+              { $set: { estado: "confirmada" } }
+            );
+
+            console.log("✅ Reservas asociadas confirmadas.");
+          } else {
+            console.warn("⚠️ No se encontró OrdenCancha con el ID:", ordenId);
+          }
         }
       }
     }
@@ -157,7 +158,6 @@ export const recibirWebhookReserva = async (req, res) => {
     return res.sendStatus(200);
   } catch (error) {
     console.error("❌ Error en Webhook:", error.message);
-
     return res.status(200).json({ error: error.message });
   }
 };
