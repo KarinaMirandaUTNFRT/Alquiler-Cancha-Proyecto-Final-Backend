@@ -5,52 +5,51 @@ const ordenCanchaSchema = new Schema(
     usuario: {
       type: Schema.Types.ObjectId,
       ref: "usuario",
-      required: true
+      required: true,
     },
     items: [
       {
         reserva: {
-      type: Schema.Types.ObjectId,
-      ref: "reserva",
+          type: Schema.Types.ObjectId,
+          ref: "reserva",
         },
         cancha: {
           type: Schema.Types.ObjectId,
           ref: "cancha",
           required: true,
         },
-        nombreCancha:{
-            type: String,
-            required: true
+        nombreCancha: {
+          type: String,
+          required: true,
         },
         precioUnitario: {
-            type: Number,
-            required: true
+          type: Number,
+          required: true,
         },
       },
     ],
-       montoTotal: {
-        type: Number,
-        required: true
-      },
-      estado: {
-        type: String,
-        enum:['pendiente', 'aprobado', 'rechazado', 'cancelado'],
-        default: 'pendiente'
-      },
-      //ids clave de mercadoPago para auditoria
-      preferenceId:{
-        type: String,
+    montoTotal: {
+      type: Number,
+      required: true,
+    },
+    estado: {
+      type: String,
+      enum: ["pendiente", "aprobado", "rechazado", "cancelado"],
+      default: "pendiente",
+    },
 
-      },
-      paymentId: {
-        type: String
-      }
+    preferenceId: {
+      type: String,
+    },
+    paymentId: {
+      type: String,
+    },
   },
   {
     timestamps: true,
   },
 );
 
-const OrdenCancha = mongoose.model('ordenCancha', ordenCanchaSchema)
+const OrdenCancha = mongoose.model("ordenCancha", ordenCanchaSchema);
 
-export default OrdenCancha
+export default OrdenCancha;

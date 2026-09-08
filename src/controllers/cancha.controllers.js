@@ -2,7 +2,7 @@ import Cancha from "../models/cancha.js";
 import CategoriaCancha from "../models/categoriaCancha.js";
 
 export const crearCancha = async (req, res) => {
-    try {
+  try {
     let imagenUrl = "";
 
     if (req.file) {
@@ -57,14 +57,12 @@ export const listarCanchas = async (req, res) => {
         .limit(limite),
       Cancha.countDocuments(query),
     ]);
-    res
-      .status(200)
-      .json({
-        canchas,
-        cantidadTotal,
-        paginaActual: paginaNumero,
-        totalPaginas: Math.ceil(cantidadTotal / limite),
-      });
+    res.status(200).json({
+      canchas,
+      cantidadTotal,
+      paginaActual: paginaNumero,
+      totalPaginas: Math.ceil(cantidadTotal / limite),
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ mensaje: "Ocurrio un error al listar las canchas" });

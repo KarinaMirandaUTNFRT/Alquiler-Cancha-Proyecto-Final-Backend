@@ -25,21 +25,21 @@ const ProductoSchema = new Schema(
     },
     categoria: {
       type: Schema.Types.ObjectId,
-      ref: 'categoriaProducto',
-      required: true
+      ref: "categoriaProducto",
+      required: true,
     },
     descripcion: {
       type: String,
       required: true,
       minLength: 10,
-      maxLength: 500
-    }
+      maxLength: 500,
+    },
   },
   {
     timestamps: true,
   },
 );
 
-const Producto =  mongoose.model('producto',ProductoSchema)
+const Producto = mongoose.model("producto", ProductoSchema);
 
-export default Producto
+export default Producto;

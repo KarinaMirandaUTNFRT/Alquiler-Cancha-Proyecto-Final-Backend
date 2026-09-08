@@ -21,6 +21,9 @@ const CategoriaProductoSchema = new Schema(
   },
 );
 
-const CategoriaProducto = mongoose.model("categoriaProducto", CategoriaProductoSchema);
+const CategoriaProducto = mongoose.model(
+  "categoriaProducto",
+  CategoriaProductoSchema,
+);
 
-export default CategoriaProducto
+export default CategoriaProducto;
