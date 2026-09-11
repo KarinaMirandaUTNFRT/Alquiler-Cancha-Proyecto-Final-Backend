@@ -14,9 +14,11 @@ const UsuarioSchema = new Schema(
       type: String,
       required: true,
       unique: true,
+      trim: true,
       validate: {
-        validator: (valor) => {
-          /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(valor);
+        validator: (valor) => 
+          /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(valor),
+          message:"El formato del correo electrónico no es válido",
         },
       },
     },
