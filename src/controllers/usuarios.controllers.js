@@ -224,7 +224,11 @@ export const login = async (req, res) => {
     });
     res
       .status(200)
-      .json({ mensaje: "Login exitoso", nombre: usuarioBuscado.nombreUsuario });
+      .json({ 
+        mensaje: "Login exitoso", 
+        nombre: usuarioBuscado.nombreUsuario, 
+        rol: usuarioBuscado.rol
+      });
   } catch (error) {
     console.error(error);
     res.status(500).json({ mensaje: "Ocurrio un error al loguear un usuario" });
