@@ -216,7 +216,7 @@ export const cancelarReservaCancha = async (req, res) => {
 export const listarReservas = async (req, res) => {
   try {
     const reservas = await Reserva.find()
-      .populate("usuario", "nombre  email") // Muestra los datos del usuario que reservó
+      .populate("usuario", "nombreUsuario  email") // Muestra los datos del usuario que reservó
       .populate("cancha", "nombreCancha  precio imagen")   // Muestra los datos de la cancha
       .sort({ fechaJornada: -1, horaInicio: 1 });  // Ordena por fecha más reciente
 
