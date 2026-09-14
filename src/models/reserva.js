@@ -1,4 +1,6 @@
 import mongoose, { Schema } from "mongoose";
+import "./usuario.js";
+import "./cancha.js";
 
 const reservaSchema = new Schema(
   {
