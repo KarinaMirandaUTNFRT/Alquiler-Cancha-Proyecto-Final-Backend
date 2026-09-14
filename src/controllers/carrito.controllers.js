@@ -28,7 +28,7 @@ export const agregarAlCarrito = async (req, res) => {
     }
     await carrito.save();
 
-    await carrito.populate("items.producto", "nombreProdcuto precio");
+    await carrito.populate("items.producto", "nombreProducto precio imagen");
 
     res.status(201).json({
       mensaje: "Producto agregado al carrito correctamente",

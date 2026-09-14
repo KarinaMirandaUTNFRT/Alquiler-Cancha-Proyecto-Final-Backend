@@ -122,7 +122,7 @@ export const obtenerCanchasid = async (req, res) => {
         .status(404)
         .json({ mensaje: "no se encontro la cancha por id" });
     }
-    res.status(200).json(canchaBuscadaBuscado);
+    res.status(200).json(canchaBuscada);
   } catch (error) {
     console.error(error);
     res
