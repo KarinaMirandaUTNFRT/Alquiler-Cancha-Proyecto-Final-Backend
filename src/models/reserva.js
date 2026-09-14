@@ -10,7 +10,7 @@ const reservaSchema = new Schema(
 
     cancha: {
       type: Schema.Types.ObjectId,
-      ref: "cancha",
+      ref: "Cancha",
       required: true,
     },
     fechaJornada: {

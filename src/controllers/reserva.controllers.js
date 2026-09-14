@@ -1,5 +1,7 @@
-import { Reserva } from "../models/reserva.js";
+import {Reserva}  from "../models/reserva.js";
 import Cancha from "../models/cancha.js";
+import Usuario from "../models/usuario.js";
+
 
 const MAPA_TURNOS = {
   "08:00": "09:00",
@@ -215,7 +217,7 @@ export const listarReservas = async (req, res) => {
   try {
     const reservas = await Reserva.find()
       .populate("usuario", "nombre  email") // Muestra los datos del usuario que reservó
-      .populate("cancha", "nombreCancha  precio")   // Muestra los datos de la cancha
+      .populate("cancha", "nombreCancha  precio imagen")   // Muestra los datos de la cancha
       .sort({ fechaJornada: -1, horaInicio: 1 });  // Ordena por fecha más reciente
 
     res.status(200).json(reservas);
