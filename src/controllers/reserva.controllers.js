@@ -211,3 +211,18 @@ export const cancelarReservaCancha = async (req, res) => {
     res.status(500).json({ mensaje: "Error al cancelar la reserva" });
   }
 };
+export const listarReservas = async (req, res) => {
+  try {
+    const reservas = await Reserva.find()
+      .populate("usuario", "nombre apellido email") // Muestra los datos del usuario que reservó
+      .populate("cancha", "nombreCancha precio")   // Muestra los datos de la cancha
+      .sort({ fechaJornada: -1, horaInicio: 1 });  // Ordena por fecha más reciente
+
+    res.status(200).json(reservas);
+  } catch (error) {
+    console.error("Error al obtener reservas:", error);
+    res.status(500).json({ 
+      mensaje: "Ocurrió un error al obtener el historial de reservas" 
+    });
+  }
+};
