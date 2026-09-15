@@ -225,9 +225,10 @@ export const login = async (req, res) => {
     res
       .status(200)
       .json({ 
-        mensaje: "Login exitoso", 
-        nombre: usuarioBuscado.nombreUsuario, 
-        rol: usuarioBuscado.rol
+        _id: usuarioBuscado._id,       // 👈 El ObjectId de Mongo Atlas
+      nombre: usuarioBuscado.nombre,
+      email: usuarioBuscado.email,
+      rol: usuarioBuscado.rol,
       });
   } catch (error) {
     console.error(error);
