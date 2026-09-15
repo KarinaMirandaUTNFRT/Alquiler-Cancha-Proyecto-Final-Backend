@@ -6,9 +6,6 @@ import { fileURLToPath } from "url";
 import "../database/db.js";
 import cookieParser from "cookie-parser";
 
-import reservaRoutes from "../routes/reserva.routes.js";
-import carritoRoutes from "../routes/carrito.routes.js";
-
 export default class Server {
   constructor() {
     this.app = express();
