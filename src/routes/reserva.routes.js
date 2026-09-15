@@ -10,11 +10,12 @@ import { autenticador, esAdmin } from "../middlewares/authMiddleware.js";
 
 const router = Router();
 router
-.route("/" )
-.post( autenticador, crearReservaCancha).get( [autenticador, esAdmin], listarReservas)
+  .route("/")
+  .post(autenticador, crearReservaCancha)
+  .get([autenticador, esAdmin], listarReservas);
 
-router.get("/disponibles", obtenerHorariosDisponibles);
-router.get("/mis-reservas", autenticador, obtenerMisReservasCancha);
-router.patch("/:id/cancelar", autenticador, cancelarReservaCancha);
+router.route("/disponibles").get(obtenerHorariosDisponibles);
+router.route("/mis-reservas").get(autenticador, obtenerMisReservasCancha);
+router.route("/:id/cancelar").patch(autenticador, cancelarReservaCancha);
 
 export default router;

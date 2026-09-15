@@ -6,13 +6,13 @@ import { fileURLToPath } from "url";
 import "../database/db.js";
 import cookieParser from "cookie-parser";
 
+
 export default class Server {
   constructor() {
     this.app = express();
     this.PORT = process.env.PORT || 3000;
     this.middlewares();
-    this.routes();
-  }
+   }
 
   middlewares() {
     this.app.use(
@@ -31,11 +31,6 @@ export default class Server {
 
     this.app.use(express.static(__dirname + "/../../public"));
   }
-routes() {
-    this.app.use("/api/reservas", reservaRoutes);
-    this.app.use("/api/carrito", carritoRoutes);
-}
-
 
   listen() {
     this.app.listen(this.PORT, () => {
