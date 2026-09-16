@@ -59,12 +59,11 @@ export const listarProductos = async (req, res) => {
 
 export const obtenerProductoPorID = async (req, res) => {
   try {
-    console.log(req.params.id);
     const productoBuscado = await Producto.findById(req.params.id).populate(
       "categoria",
       "nombre descripcion",
     );
-    console.log(productoBuscado);
+
     if (!productoBuscado) {
       return res
         .status(404)

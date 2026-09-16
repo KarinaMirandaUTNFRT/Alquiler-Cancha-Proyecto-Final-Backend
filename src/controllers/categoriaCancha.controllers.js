@@ -72,7 +72,6 @@ export const editarCategoria = async (req, res) => {
 };
 export const obtenerCategoriaCanchaPorID = async (req, res) => {
   try {
-    console.log(req.params.id);
     const categoriaBuscada = await Categoria.findById(req.params.id);
     if (!categoriaBuscada) {
       return res

@@ -115,7 +115,6 @@ export const editarCancha = async (req, res) => {
 };
 export const obtenerCanchasid = async (req, res) => {
   try {
-    console.log(req.params.id);
     const canchaBuscada = await Cancha.findById(req.params.id);
     if (!canchaBuscada) {
       return res

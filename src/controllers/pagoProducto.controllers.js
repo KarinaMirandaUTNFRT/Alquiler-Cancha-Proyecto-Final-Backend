@@ -77,7 +77,6 @@ export const crearPreferenciaPago = async (req, res) => {
 };
 export const recibirWebhook = async (req, res) => {
   try {
-    console.log("🚨 CUIDADO: El Webhook se está ejecutando!");
     const { type, "data.id": paymentId } = req.query;
 
     if (type === "payment" && paymentId) {

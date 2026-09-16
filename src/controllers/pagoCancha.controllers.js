@@ -66,7 +66,8 @@ export const crearPreferenciaReserva = async (req, res) => {
 
     const backendUrl = process.env.BACKEND_URL?.trim().replace(/\/$/, "");
     const frontendUrl = (
-      process.env.PAYMENT_FRONTEND_URL?.trim() || "https://rollingclubfront.netlify.app"
+      process.env.PAYMENT_FRONTEND_URL?.trim() ||
+      "https://rollingclubfront.netlify.app"
     ).replace(/\/$/, "");
 
     const preference = new Preference(client);
@@ -136,17 +137,10 @@ export const recibirWebhookReserva = async (req, res) => {
           );
 
           if (ordenActualizada) {
-            console.log(
-              "✅ OrdenCancha aprobada con éxito:",
-              ordenActualizada._id,
-            );
-
             await Reserva.updateMany(
               { preferenceId: ordenActualizada.preferenceId },
               { $set: { estado: "confirmada" } },
             );
-
-            console.log("✅ Reservas asociadas confirmadas.");
           } else {
             console.warn("⚠️ No se encontró OrdenCancha con el ID:", ordenId);
           }

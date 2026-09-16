@@ -14,7 +14,7 @@ const reglasCancha = [
     )
     .custom(async (valorNom, { req }) => {
       const valorNomBuscado = await Cancha.findOne({ nombreCancha: valorNom });
-      console.log(valorNomBuscado);
+
       if (!valorNomBuscado) {
         return true;
       }
