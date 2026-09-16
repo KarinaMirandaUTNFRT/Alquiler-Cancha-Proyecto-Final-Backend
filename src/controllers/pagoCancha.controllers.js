@@ -66,7 +66,7 @@ export const crearPreferenciaReserva = async (req, res) => {
 
     const backendUrl = process.env.BACKEND_URL?.trim().replace(/\/$/, "");
     const frontendUrl = (
-      process.env.PAYMENT_FRONTEND_URL?.trim() || "http://localhost:5173"
+      process.env.PAYMENT_FRONTEND_URL?.trim() || "https://rollingclubfront.netlify.app"
     ).replace(/\/$/, "");
 
     const preference = new Preference(client);

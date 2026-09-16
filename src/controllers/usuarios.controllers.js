@@ -225,7 +225,7 @@ export const login = async (req, res) => {
     res
       .status(200)
       .json({ 
-        _id: usuarioBuscado._id,       // 👈 El ObjectId de Mongo Atlas
+        _id: usuarioBuscado._id,      
       nombre:usuarioBuscado.nombreUsuario,
       email: usuarioBuscado.email,
       rol: usuarioBuscado.rol,
