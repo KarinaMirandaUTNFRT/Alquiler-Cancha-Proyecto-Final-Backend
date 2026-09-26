@@ -10,7 +10,7 @@ export const crearCancha = async (req, res) => {
       imagenUrl = resultado.secure_url;
     } else {
       imagenUrl =
-        "https://images.pexels.com/photos/8481895/pexels-photo-8481895.jpeg";
+        "https://res.cloudinary.com/ddhyg9uee/image/upload/v1790465736/carrito_nhrwkl.avif";
     }
 
     const nuevocanchaData = {
