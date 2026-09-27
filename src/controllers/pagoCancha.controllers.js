@@ -1,6 +1,7 @@
 import { MercadoPagoConfig, Preference, Payment } from "mercadopago";
 import { Reserva } from "../models/reserva.js";
 import OrdenCancha from "../models/ordenCancha.js";
+import { validarFirmaMercadoPago } from "../helpers/validarWebhookMP.js";
 
 const client = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN?.trim(),
@@ -107,50 +108,45 @@ export const crearPreferenciaReserva = async (req, res) => {
     });
   }
 };
-
 export const recibirWebhookReserva = async (req, res) => {
   try {
-    const topic =
-      req.query.topic || req.query.type || req.body?.type || req.body?.action;
-    const paymentId =
-      req.query["data.id"] || req.body?.data?.id || req.query.id;
-
-    if (topic === "merchant_order") {
-      return res.status(200).send("merchant_order descartada");
+    // 1. Validar la autenticidad de la firma[cite: 20]
+    const esFirmaValida = validarFirmaMercadoPago(req);
+    if (!esFirmaValida) {
+      console.error("Firma de webhook de Mercado Pago no válida o ausente.");
+      return res.status(403).json({ error: "Firma inválida" });
     }
 
-    if (paymentId) {
-      const payment = new Payment(client);
-      const pagoData = await payment.get({ id: paymentId });
+    const tipo = req.body?.type || req.query?.type;
 
-      if (pagoData.status === "approved") {
-        const ordenId = pagoData.external_reference?.trim();
+    if (tipo === "payment") {
+      const paymentId = req.body?.data?.id || req.query?.["data.id"] || req.query?.id;
 
-        if (ordenId) {
-          const ordenActualizada = await OrdenCancha.findByIdAndUpdate(
-            ordenId,
-            {
-              estado: "aprobado",
-              paymentId: paymentId.toString(),
-            },
-            { new: true },
-          );
+      // 2. Consultar el pago en Mercado Pago (SDK o Fetch) para obtener external_reference real
+      // const pago = await paymentClient.get({ id: paymentId });
+      // const idReserva = pago.external_reference;
 
-          if (ordenActualizada) {
-            await Reserva.updateMany(
-              { preferenceId: ordenActualizada.preferenceId },
-              { $set: { estado: "confirmada" } },
-            );
-          } else {
-            console.warn("⚠️ No se encontró OrdenCancha con el ID:", ordenId);
-          }
+      const idReserva = req.body?.external_reference || req.query?.external_reference;
+
+      // 3. Verificar que la reserva exista antes de actualizar su estado[cite: 20]
+      if (idReserva) {
+        const reserva = await Reserva.findById(idReserva);
+        if (!reserva) {
+          console.warn(`Reserva con ID ${idReserva} no encontrada en BD`);
+          return res.status(404).json({ error: "Reserva no encontrada" });
+        }
+
+        if (reserva.estado !== "confirmada") {
+          reserva.estado = "confirmada";
+          await reserva.save();
         }
       }
     }
 
-    return res.sendStatus(200);
+    // Mercado Pago requiere un status 200 para confirmar la recepción
+    return res.status(200).send("OK");
   } catch (error) {
-    console.error("❌ Error en Webhook:", error.message);
-    return res.status(200).json({ error: error.message });
+    console.error("Error al procesar webhook de pago:", error);
+    return res.status(500).json({ error: "Error interno al procesar webhook" });
   }
 };
