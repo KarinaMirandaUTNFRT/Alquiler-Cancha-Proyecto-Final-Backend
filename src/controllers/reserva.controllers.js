@@ -89,17 +89,28 @@ export const crearReservaCancha = async (req, res) => {
 };
 export const obtenerHorariosDisponibles = async (req, res) => {
   try {
-    const { canchasId, canchaId, fecha } = req.query;
+    const idCancha = req.query.canchaId || req.query.canchasId;
+    const { fecha } = req.query;
 
-    if (!fecha) {
+    if (!idCancha || !fecha) {
       return res.status(400).json({ mensaje: "La fecha es obligatoria" });
     }
-
+       if (!mongoose.Types.ObjectId.isValid(idCancha)) {
+      return res.status(400).json({
+        mensaje: "El ID de la cancha proporcionado no es válido.",
+      });
+    }
+    const regexFecha = /^\d{4}-\d{2}-\d{2}$/;
+    if (!regexFecha.test(fecha) || isNaN(Date.parse(fecha))) {
+      return res.status(400).json({
+        mensaje: "El formato de fecha debe ser YYYY-MM-DD y ser una fecha válida.",
+      });
+    }
     let listaIds = [];
-    if (canchasId) {
-      listaIds = canchasId.split(",").map((id) => id.trim());
-    } else if (canchaId) {
-      listaIds = [canchaId.trim()];
+    if (idCancha) {
+      listaIds = idCancha.split(",").map((id) => id.trim());
+    } else if (idCancha) {
+      listaIds = [idCancha.trim()];
     }
 
     if (listaIds.length === 0) {

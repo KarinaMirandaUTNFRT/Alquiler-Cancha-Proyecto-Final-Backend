@@ -7,6 +7,9 @@ import {
 
 const router = Router();
 
-router.route("/crear-preferencia").post(autenticador, crearPreferenciaReserva);
-router.route("/webhook").post(recibirWebhookReserva).get(recibirWebhookReserva);
+router.route("/crear-preferencia")
+.post(autenticador, crearPreferenciaReserva);
+router.route("/webhook")
+.post(recibirWebhookReserva)
+.get(recibirWebhookReserva);
 export default router;
