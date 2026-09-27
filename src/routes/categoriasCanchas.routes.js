@@ -6,24 +6,21 @@ import {
   listarCategoriasCanchas,
   obtenerCategoriaCanchaPorID,
 } from "../controllers/categoriaCancha.controllers.js";
-import {
-  validacionCategoria,
-  validacionCategoriaPatch,
-  validacionIDCategoria,
-} from "../middlewares/validacionCategoriaCancha.js";
+
+import { autenticador, esAdmin } from "../middlewares/authMiddleware.js";
 
 const router = Router();
 
 router
   .route("/")
-  .post(validacionCategoria, crearCategoriaCancha)
+  .post([autenticador, esAdmin],crearCategoriaCancha)
   .get(listarCategoriasCanchas);
 
 router
   .route("/:id")
-  .get(validacionIDCategoria, obtenerCategoriaCanchaPorID)
-  .delete(validacionIDCategoria, borrarCategoria)
-  .put([validacionIDCategoria, validacionCategoria], editarCategoria)
-  .patch(validacionCategoriaPatch, editarCategoria);
+  .get( obtenerCategoriaCanchaPorID)
+  .delete([autenticador, esAdmin],  borrarCategoria)
+  .put( [autenticador, esAdmin],editarCategoria)
+  .patch([autenticador, esAdmin], editarCategoria);
 
 export default router;

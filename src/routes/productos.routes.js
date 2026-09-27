@@ -6,20 +6,16 @@ import {
   listarProductos,
   obtenerProductoPorID,
 } from "../controllers/producto.controllers.js";
-import {
-  validacionIDProducto,
-  validacionProducto,
-  validacionProductoPatch,
-} from "../middlewares/validacionProducto.js";
+import { autenticador, esAdmin } from "../middlewares/authMiddleware.js";
 
 const router = Router();
 
-router.route("/").post(validacionProducto, crearProducto).get(listarProductos);
+router.route("/").post( [autenticador, esAdmin], crearProducto).get(listarProductos);
 router
   .route("/:id")
-  .get(validacionIDProducto, obtenerProductoPorID)
-  .delete(validacionIDProducto, borrarProductoPorID)
-  .put([validacionIDProducto, validacionProducto], editarProductoPorID)
-  .patch(validacionProductoPatch, editarProductoPorID);
+  .get( obtenerProductoPorID)
+  .delete( [autenticador, esAdmin], borrarProductoPorID)
+  .put([autenticador, esAdmin], editarProductoPorID)
+  .patch([autenticador, esAdmin], editarProductoPorID);
 
 export default router;

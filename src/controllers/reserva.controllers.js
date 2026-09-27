@@ -143,7 +143,7 @@ export const obtenerHorariosDisponibles = async (req, res) => {
       );
 
       return {
-        canchaId: srv._id,
+        cand: srv._id,
         nombreCancha: srv.nombreCancha,
         precio: srv.precio,
         fecha,
