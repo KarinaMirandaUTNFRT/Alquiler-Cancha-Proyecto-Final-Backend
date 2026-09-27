@@ -1,6 +1,8 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema, model } from "mongoose";
 import "./usuario.js";
 import "./cancha.js";
+import { HORARIOS } from "../helpers/constants.js";
+
 
 const reservaSchema = new Schema(
   {
@@ -21,6 +23,7 @@ const reservaSchema = new Schema(
     },
     horaInicio: {
       type: String,
+      enum:HORARIOS,
       required: true,
     },
 
