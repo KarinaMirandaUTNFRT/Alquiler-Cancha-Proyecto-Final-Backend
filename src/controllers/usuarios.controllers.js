@@ -194,12 +194,12 @@ export const login = async (req, res) => {
     if (!usuarioBuscado) {
       return res
         .status(401)
-        .json({ mensaje: "Credenciales invalidas - email" });
+        .json({ mensaje: "Correo o contraseña incorrectos" });
     }
     if (!(await bcrypt.compare(password, usuarioBuscado.password))) {
       return res
         .status(401)
-        .json({ mensaje: "Credenciales invalidas - password" });
+        .json({ mensaje: "Correo o contraseña incorrectos" });
     }
 
     if (!usuarioBuscado.verificado) {
