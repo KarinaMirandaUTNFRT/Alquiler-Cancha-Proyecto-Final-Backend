@@ -1,7 +1,7 @@
 import {Reserva}  from "../models/reserva.js";
 import Cancha from "../models/cancha.js";
 import Usuario from "../models/usuario.js";
-
+import mongoose from "mongoose";
 
 const MAPA_TURNOS = {
   "08:00": "09:00",
