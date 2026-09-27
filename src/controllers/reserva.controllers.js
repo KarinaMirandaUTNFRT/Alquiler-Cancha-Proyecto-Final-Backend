@@ -223,12 +223,27 @@ export const cancelarReservaCancha = async (req, res) => {
 };
 export const listarReservas = async (req, res) => {
   try {
+    const limite = Math.max(1, parseInt(req.query.limite) || 10); 
+    const pagina = Math.max(1, parseInt(req.query.pagina) || 1);
+    const salto = (pagina - 1) * limite;
+    
+    
     const reservas = await Reserva.find()
       .populate("usuario", "nombreUsuario  email") 
       .populate("cancha", "nombreCancha  precio imagen")   
-      .sort({ fechaJornada: -1, horaInicio: 1 });  
+      .sort({ fechaJornada: -1, horaInicio: 1 }) 
+      .skip(salto)
+      .limit(limite); 
 
-    res.status(200).json(reservas);
+    res.status(200).json( {
+  total: totalReservas,
+      totalPaginas: Math.ceil(totalReservas / limite),
+      paginaActual: pagina,
+      limitePorPagina: limite,
+      reservas,
+    });
+  
+  
   } catch (error) {
     console.error("Error al obtener reservas:", error);
     res.status(500).json({ 
