@@ -1,4 +1,4 @@
-import {Reserva}  from "../models/reserva.js";
+import { Reserva } from "../models/reserva.js";
 import Cancha from "../models/cancha.js";
 import mongoose from "mongoose";
 
@@ -91,10 +91,16 @@ export const obtenerHorariosDisponibles = async (req, res) => {
     const idCancha = req.query.canchaId || req.query.canchasId;
     const { fecha } = req.query;
 
+    const { error, value } = validaciónSchema.validate({
+      canchaId: req.query.canchaId,
+      fecha: req.query.fecha,
+    });
+
+    if (error) return res.status(400).json({ error: error.details });
     if (!idCancha || !fecha) {
       return res.status(400).json({ mensaje: "La fecha es obligatoria" });
     }
-       if (!mongoose.Types.ObjectId.isValid(idCancha)) {
+    if (!mongoose.Types.ObjectId.isValid(idCancha)) {
       return res.status(400).json({
         mensaje: "El ID de la cancha proporcionado no es válido.",
       });
@@ -102,7 +108,8 @@ export const obtenerHorariosDisponibles = async (req, res) => {
     const regexFecha = /^\d{4}-\d{2}-\d{2}$/;
     if (!regexFecha.test(fecha) || isNaN(Date.parse(fecha))) {
       return res.status(400).json({
-        mensaje: "El formato de fecha debe ser YYYY-MM-DD y ser una fecha válida.",
+        mensaje:
+          "El formato de fecha debe ser YYYY-MM-DD y ser una fecha válida.",
       });
     }
     let listaIds = [];
@@ -157,11 +164,18 @@ export const obtenerHorariosDisponibles = async (req, res) => {
     });
   } catch (error) {
     console.error("Error al consultar disponibilidad:", error);
-    return res
-      .status(500)
-      .json({ mensaje: "Error al consultar disponibilidad" });
+    return res.status(500).json({
+      success: false,
+      error: {
+        mensaje: "Error al consultar disponibilidad",
+        ...(process.env.NODE_ENV === "development" && {
+          detalle: error.message,
+        }),
+      },
+    });
   }
 };
+
 export const obtenerMisReservasCancha = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -178,9 +192,7 @@ export const obtenerMisReservasCancha = async (req, res) => {
 export const cancelarReservaCancha = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId =
-      req.usuario?._id 
-      
+    const userId = req.usuario?._id;
 
     const reserva = await Reserva.findOne({ _id, usuario: userId });
 
@@ -222,31 +234,28 @@ export const cancelarReservaCancha = async (req, res) => {
 };
 export const listarReservas = async (req, res) => {
   try {
-    const limite = Math.max(1, parseInt(req.query.limite) || 10); 
+    const limite = Math.max(1, parseInt(req.query.limite) || 10);
     const pagina = Math.max(1, parseInt(req.query.pagina) || 1);
     const salto = (pagina - 1) * limite;
-    
-    
-    const reservas = await Reserva.find()
-      .populate("usuario", "nombreUsuario  email") 
-      .populate("cancha", "nombreCancha  precio imagen")   
-      .sort({ fechaJornada: -1, horaInicio: 1 }) 
-      .skip(salto)
-      .limit(limite); 
 
-    res.status(200).json( {
-  total: totalReservas,
+    const reservas = await Reserva.find()
+      .populate("usuario", "nombreUsuario  email")
+      .populate("cancha", "nombreCancha  precio imagen")
+      .sort({ fechaJornada: -1, horaInicio: 1 })
+      .skip(salto)
+      .limit(limite);
+
+    res.status(200).json({
+      total: totalReservas,
       totalPaginas: Math.ceil(totalReservas / limite),
       paginaActual: pagina,
       limitePorPagina: limite,
       reservas,
     });
-  
-  
   } catch (error) {
     console.error("Error al obtener reservas:", error);
-    res.status(500).json({ 
-      mensaje: "Ocurrió un error al obtener el historial de reservas" 
+    res.status(500).json({
+      mensaje: "Ocurrió un error al obtener el historial de reservas",
     });
   }
 };
