@@ -44,6 +44,12 @@ router
     ],
     editarCancha,
   )
-  .patch([autenticador, esAdmin, validacionCanchaPatch], editarCancha);
+  .patch([
+    autenticador, 
+    esAdmin, 
+    upload.single("imagen"),
+    validacionCanchaPatch
+  ], 
+  editarCancha);
 
 export default router;

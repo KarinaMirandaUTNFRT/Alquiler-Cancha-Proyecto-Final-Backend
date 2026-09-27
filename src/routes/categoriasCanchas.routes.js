@@ -8,6 +8,7 @@ import {
 } from "../controllers/categoriaCancha.controllers.js";
 
 import { autenticador, esAdmin } from "../middlewares/authMiddleware.js";
+import { validacionCategoriaPatch } from "../middlewares/validacionCategoriaCancha.js";
 
 const router = Router();
 
@@ -21,6 +22,6 @@ router
   .get( obtenerCategoriaCanchaPorID)
   .delete([autenticador, esAdmin],  borrarCategoria)
   .put( [autenticador, esAdmin],editarCategoria)
-  .patch([autenticador, esAdmin], editarCategoria);
+  .patch([autenticador, esAdmin, validacionCategoriaPatch], editarCategoria);
 
 export default router;
