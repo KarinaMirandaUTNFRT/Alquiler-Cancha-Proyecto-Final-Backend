@@ -7,6 +7,7 @@ import "../database/db.js";
 import cookieParser from "cookie-parser";
 
 
+
 export default class Server {
   constructor() {
     this.app = express();
@@ -26,6 +27,7 @@ export default class Server {
     this.app.use(express.json());
     this.app.use(morgan("dev"));
     this.app.use(cookieParser());
+    
 
     const __dirname = dirname(fileURLToPath(import.meta.url));
 
