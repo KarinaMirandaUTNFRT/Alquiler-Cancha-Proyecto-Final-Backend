@@ -6,7 +6,7 @@ const reservaSchema = new Schema(
   {
     usuario: {
       type: Schema.Types.ObjectId,
-      ref: "Usuario",
+      ref: "usuario",
       required: true,
     },
 
