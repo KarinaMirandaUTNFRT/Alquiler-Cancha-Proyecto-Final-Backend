@@ -11,5 +11,4 @@ router.route("/crear-preferencia")
 .post(autenticador, crearPreferenciaReserva);
 router.route("/webhook")
 .post(recibirWebhookReserva)
-.get(recibirWebhookReserva);
 export default router;
