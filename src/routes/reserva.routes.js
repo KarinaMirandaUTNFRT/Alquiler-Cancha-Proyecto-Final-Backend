@@ -17,7 +17,8 @@ router
   .post(autenticador, crearReservaCancha)
   .get([autenticador, esAdmin], listarReservas);
 
-router.get("/disponibles")(
+router.get(
+  "/disponibles",
   [
     query("fecha")
       .notEmpty()
