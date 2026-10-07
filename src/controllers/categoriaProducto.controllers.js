@@ -14,10 +14,7 @@ export const crearCategoriaProducto = async (req, res) => {
 };
 
 export const listarCategoriasProductos = async (req, res) => {
-  try {
-    const categorias = await CategoriaProducto.find();
-    res.status(200).json(categorias);
-  try {
+    try {
     const limite = Math.max(1, parseInt(req.query.limite) || 10);
     const pagina = Math.max(1, parseInt(req.query.pagina) || 1);
     const skip = (pagina - 1) * limite;
