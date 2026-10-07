@@ -35,7 +35,7 @@ const reglasCancha = () => [
     .isString()
     .withMessage("La descripcion  de la cancha debe ser un string")
     .isLength({ min: 10, max: 500 })
-    .withMessage("La descripcion no debe exceder los 500 caracteres"),
+    .withMessage("La descripcion no debe ser menor a 10 ni exeder los 500 caracteres"),
 ];
 
 export const validacionCancha = [
