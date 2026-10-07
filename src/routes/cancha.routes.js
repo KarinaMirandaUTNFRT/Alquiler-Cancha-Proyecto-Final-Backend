@@ -48,6 +48,7 @@ router
     autenticador, 
     esAdmin, 
     upload.single("imagen"),
+    validacionIdCancha,
     validacionCanchaPatch
   ], 
   editarCancha);
