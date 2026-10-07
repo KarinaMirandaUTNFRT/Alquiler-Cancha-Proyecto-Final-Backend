@@ -39,14 +39,14 @@ const reglasCancha = () => [
 ];
 
 export const validacionCancha = [
-  ...reglasCancha.map((regla) =>
+  ...reglasCancha().map((regla) =>
     regla.notEmpty().withMessage("Este campo es obligatorio"),
   ),
   resultadoValidacion,
 ];
 
 export const validacionCanchaPatch = [
-  ...reglasCancha.map((regla) => regla.optional({ values: "falsy" })),
+  ...reglasCancha().map((regla) => regla.optional({ values: "falsy" })),
   resultadoValidacion,
 ];
 
