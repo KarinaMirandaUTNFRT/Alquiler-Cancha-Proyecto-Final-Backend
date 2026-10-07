@@ -17,7 +17,25 @@ export const listarCategoriasProductos = async (req, res) => {
   try {
     const categorias = await CategoriaProducto.find();
     res.status(200).json(categorias);
-  } catch (error) {
+  try {
+    const limite = Math.max(1, parseInt(req.query.limite) || 10);
+    const pagina = Math.max(1, parseInt(req.query.pagina) || 1);
+    const skip = (pagina - 1) * limite;
+
+    const [total, categorias] = await Promise.all([
+      CategoriaProducto.countDocuments(),
+      CategoriaProducto.find().skip(skip).limit(limite),
+    ]);
+
+    res.status(200).json({
+      total,
+      paginaActual: pagina,
+      totalPaginas: Math.ceil(total / limite),
+      limite,
+      categorias,
+    });
+  
+    } catch (error) {
     console.error(error);
     res
       .status(500)
