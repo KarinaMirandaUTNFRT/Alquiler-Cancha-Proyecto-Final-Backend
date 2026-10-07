@@ -18,8 +18,23 @@ export const crearUsuario = async (req, res) => {
 
 export const listarUsuarios = async (req, res) => {
   try {
-    const usuarios = await Usuario.find();
-    res.status(200).json(usuarios);
+    const limite = Math.max(1, parseInt(req.query.limite) || 10);
+    const pagina = Math.max(1, parseInt(req.query.pagina) || 1);
+    const skip = (pagina - 1) * limite;
+
+    const [total, usuarios] = await Promise.all([
+      Usuario.countDocuments(),
+      Usuario.find().skip(skip).limit(limite),
+    ]);
+
+    res.status(200).json({
+      total,
+      paginaActual: pagina,
+      totalPaginas: Math.ceil(total / limite),
+      limite,
+      usuarios,
+    });
+     
   } catch (error) {
     console.error(error);
     res
