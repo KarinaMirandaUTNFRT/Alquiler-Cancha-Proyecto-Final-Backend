@@ -172,9 +172,9 @@ export const obtenerMisReservasCancha = async (req, res) => {
 };
 export const cancelarReservaCancha = async (req, res) => {
   try {
+    
+    const userId = req.usuario.id;
     const { id } = req.params;
-    const userId = req.usuario?._id;
-
     const reserva = await Reserva.findOne({ _id, usuario: userId });
 
     if (!reserva) {
