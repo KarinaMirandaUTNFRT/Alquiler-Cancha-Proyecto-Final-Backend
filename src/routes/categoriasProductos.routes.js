@@ -11,21 +11,22 @@ import {
   validacionCategoriaPatch,
   validacionIDCategoria,
 } from "../middlewares/validacionCategoria.js";
+import { autenticador, esAdmin } from "../middlewares/authMiddleware.js";
 
 const router = Router();
 
 router
   .route("/")
-  .post(validacionCategoria, crearCategoriaProducto)
+  .post([autenticador, esAdmin, validacionCategoria], crearCategoriaProducto)
   .get(listarCategoriasProductos);
 router
   .route("/:id")
   .get(validacionIDCategoria, obtenerCategoriaProductoPorID)
-  .delete(validacionIDCategoria, borrarCategoriaProductoPorID)
+  .delete([autenticador, esAdmin, validacionIDCategoria], borrarCategoriaProductoPorID)
   .put(
-    [validacionIDCategoria, validacionCategoria],
+    [autenticador, esAdmin, validacionIDCategoria, validacionCategoria],
     editarCategoriaProductoPorID,
   )
-  .patch(validacionCategoriaPatch, editarCategoriaProductoPorID);
+  .patch([autenticador, esAdmin, validacionIDCategoria, validacionCategoriaPatch], editarCategoriaProductoPorID);
 
 export default router;
