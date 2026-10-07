@@ -15,8 +15,23 @@ export const crearCategoriaCancha = async (req, res) => {
 
 export const listarCategoriasCanchas = async (req, res) => {
   try {
-    const categorias = await CategoriaCancha.find();
-    res.status(200).json(categorias);
+    const limite = Math.max(1, parseInt(req.query.limite) || 10);
+    const pagina = Math.max(1, parseInt(req.query.pagina) || 1);
+    const skip = (pagina - 1) * limite;
+
+    const [total, categorias] = await Promise.all([
+      CategoriaCancha.countDocuments(),
+      CategoriaCancha.find().skip(skip).limit(limite),
+    ]);
+
+    res.status(200).json({
+      total,
+      paginaActual: pagina,
+      totalPaginas: Math.ceil(total / limite),
+      limite,
+      categorias,
+    }); 
+  
   } catch (error) {
     console.error(error);
     res
