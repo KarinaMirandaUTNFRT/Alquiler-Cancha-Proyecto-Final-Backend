@@ -2,7 +2,7 @@ import { body, param } from "express-validator";
 import resultadoValidacion from "./resultadoValidacion.js";
 import Cancha from "../models/cancha.js";
 
-const reglasCancha = [
+const reglasCancha = () => [
   body("nombreCancha")
     .isString()
     .withMessage(
@@ -24,11 +24,13 @@ const reglasCancha = [
       throw new Error("El nombre de la cancha ya existe, elige otro diferente");
     }),
 
-  body("precio")
+ body("precio")
     .isNumeric()
     .withMessage("el precio debe ser un valor numerico")
-    .isFloat({ min: 50 })
+    .isFloat({ min: 1000 })
     .withMessage("el precio minimo es de $1000 pesos"),
+
+
   body("descripcion")
     .isString()
     .withMessage("La descripcion  de la cancha debe ser un string")
