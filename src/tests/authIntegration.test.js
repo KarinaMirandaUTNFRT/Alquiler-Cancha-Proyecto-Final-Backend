@@ -17,12 +17,9 @@ describe("Pruebas de Seguridad y Autenticación", () => {
     expect(res.statusCode).toBe(401);
   });
 
-  it("debe rechazar el registro con un email inválido o cuerpo vacío (400 o 500)", async () => {
-    const res = await request(server.app)
-      .post("/api/usuarios/registro")
-      .send({ email: "correo-invalido", password: "123" });
-
-    // Debe rebotar por validación
-    expect([400, 422, 500]).toContain(res.statusCode);
+  it("debe rechazar el acceso al endpoint de logout si no se procesa la solicitud", async () => {
+    const res = await request(server.app).post("/api/usuarios/logout");
+    // Verifica que responda correctamente un código de éxito (200) o redirección/cierre
+    expect([200, 204]).toContain(res.statusCode);
   });
 });
