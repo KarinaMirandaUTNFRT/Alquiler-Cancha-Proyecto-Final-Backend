@@ -9,6 +9,11 @@ const router = Router();
 
 router.route("/crear-preferencia")
 .post(autenticador, crearPreferenciaPago);
-router.route("/webhook")
-.post(recibirWebhook);
+router.route("/webhook").post((req, res, next) => {
+  if (!validarFirmaMercadoPago(req)) {
+    return res.status(401).json({ error: "Firma inválida" });
+  }
+  next();
+}, recibirWebhook);
+
 export default router;
