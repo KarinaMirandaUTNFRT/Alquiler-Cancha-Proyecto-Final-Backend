@@ -22,7 +22,7 @@ router.route("/")
 
 router
   .route("/:id")
-  .get( obtenerProductoPorID, obtenerCategoriaProductoPorID)
+  .get( validacionIDProducto,   obtenerProductoPorID)
   .delete( [autenticador, esAdmin, validacionIDProducto], borrarProductoPorID)
   .put(
     [
