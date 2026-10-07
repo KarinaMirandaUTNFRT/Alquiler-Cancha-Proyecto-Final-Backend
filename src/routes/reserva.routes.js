@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { query } from "express-validator";
+import { query, param } from "express-validator";
 import {
   cancelarReservaCancha,
   crearReservaCancha,
@@ -35,6 +35,15 @@ router.get(
 );
 
 router.route("/mis-reservas").get(autenticador, obtenerMisReservasCancha);
-router.route("/:id/cancelar").patch(autenticador, cancelarReservaCancha);
+router.route("/:id/cancelar")
+.patch
+[
+  autenticador, 
+  param("id")
+  .isMongoId()
+  .withMessage("El ID de la reserva no es válido"),
+    resultadoValidacion,
+]
+   cancelarReservaCancha;
 
 export default router;
