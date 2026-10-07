@@ -218,13 +218,16 @@ export const listarReservas = async (req, res) => {
     const limite = Math.max(1, parseInt(req.query.limite) || 10);
     const pagina = Math.max(1, parseInt(req.query.pagina) || 1);
     const salto = (pagina - 1) * limite;
-
-    const reservas = await Reserva.find()
+    
+    const [totalReservas, reservas] = await Promise.all([
+  Reserva.countDocuments(),
+  Reserva.find()
       .populate("usuario", "nombreUsuario  email")
       .populate("cancha", "nombreCancha  precio imagen")
       .sort({ fechaJornada: -1, horaInicio: 1 })
       .skip(salto)
-      .limit(limite);
+      .limit(limite)
+    ]);
 
     res.status(200).json({
       total: totalReservas,
