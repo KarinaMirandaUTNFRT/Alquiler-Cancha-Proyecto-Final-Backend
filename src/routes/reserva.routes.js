@@ -36,14 +36,15 @@ router.get(
 
 router.route("/mis-reservas").get(autenticador, obtenerMisReservasCancha);
 router.route("/:id/cancelar")
-.patch
+.patch(
 [
   autenticador, 
   param("id")
   .isMongoId()
   .withMessage("El ID de la reserva no es válido"),
     resultadoValidacion,
-]
-   cancelarReservaCancha;
+],
+   cancelarReservaCancha
+  );
 
 export default router;
