@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node index",
-    "dev": "node --env-file .env --watch index"
+    "dev": "node --env-file .env --watch index",
+    "test": "vitest run"
   },
   "keywords": [
     "middleware",
