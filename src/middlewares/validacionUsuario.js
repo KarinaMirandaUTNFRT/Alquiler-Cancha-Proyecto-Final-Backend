@@ -1,7 +1,6 @@
 import { body } from "express-validator";
 import resultadoValidacion from "./resultadoValidacion.js";
 
-// 1. Para registro y creación de usuario
 export const validacionRegistroUsuario = [
   body("nombreUsuario")
     .notEmpty()
@@ -17,24 +16,30 @@ export const validacionRegistroUsuario = [
     .notEmpty()
     .withMessage("La contraseña es obligatoria")
     .isLength({ min: 8 })
-    .withMessage("La contraseña debe tener al menos 8 caracteres"),
+    .withMessage("La contraseña debe tener  8 caracteres")
+    .custom((valor) => {
+      const patronPassword =
+        /^(?=.*\d)(?=.*[\u0021-\u002b\u003c-\u0040])(?=.*[A-Z])(?=.*[a-z])\S{8,50}$/;
+      if (!patronPassword.test(valor)) {
+        throw new Error(
+          "La contraseña debe contener al menos una letra mayúscula, una minúscula y un número",
+        );
+      }
+      return true;
+    }),
   resultadoValidacion,
 ];
 
-// 2. Para el inicio de sesión
 export const validacionLogin = [
   body("email")
     .notEmpty()
     .withMessage("El email es obligatorio")
     .isEmail()
     .withMessage("Debe ser un email válido"),
-  body("password")
-    .notEmpty()
-    .withMessage("La contraseña es obligatoria"),
+  body("password").notEmpty().withMessage("La contraseña es obligatoria"),
   resultadoValidacion,
 ];
 
-// 3. Opcionales si tienes verificación por código
 export const validacionVerificarCodigo = [
   body("email").isEmail().withMessage("Debe ser un email válido"),
   body("codigo")
@@ -46,6 +51,10 @@ export const validacionVerificarCodigo = [
 ];
 
 export const validacionReenviarCodigo = [
-  body("email").isEmail().withMessage("Debe ser un email válido"),
+  body("email")
+    .notEmpty()
+    .withMessage("El email es obligatorio")
+    .isEmail()
+    .withMessage("Debe ser un email válido"),
   resultadoValidacion,
 ];
