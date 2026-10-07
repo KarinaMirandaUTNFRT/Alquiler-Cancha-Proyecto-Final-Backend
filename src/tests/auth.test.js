@@ -5,7 +5,7 @@ describe("Validaciones de Password y Utilidades", () => {
 
   it("debe rechazar contraseñas débiles o cortas", () => {
     expect(regexPassword.test("12345")).toBe(false);
-    expect(regexPassword.test("sinMayuscula1!")).toBe(false);
+    expect(regexPassword.test("sinmayuscula1!")).toBe(false);
     expect(regexPassword.test("SinSimbolo1234")).toBe(false);
   });
 
