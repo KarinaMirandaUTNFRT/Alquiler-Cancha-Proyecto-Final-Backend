@@ -3,10 +3,11 @@ import Producto from "../models/producto.js";
 
 export const agregarAlCarrito = async (req, res) => {
   try {
-    const { producto, cantidad } = req.body;
+    const {productoId, cantidad = 1 } = req.body;
+    const idProductoAgregar = productoId 
     const userId = req.user.id;
 
-    const productoBuscado = await Producto.findById(producto);
+    const productoBuscado = await Producto.findById(idProductoAgregar);
     if (!productoBuscado) {
       return res
         .status(400)
@@ -15,15 +16,15 @@ export const agregarAlCarrito = async (req, res) => {
 
     const carrito = await buscarOCrearCarrito(userId);
     const itemIndex = carrito.items.findIndex(
-      (item) => item.producto.toString() === producto,
+      (item) => item.producto.toString() === idProductoAgregar.toString(),
     );
 
     if (itemIndex > -1) {
       carrito.items[itemIndex].cantidad += parseInt(cantidad);
     } else {
       carrito.items.push({
-        producto,
-        cantidad,
+        producto: idProductoAgregar,
+        cantidad:parseInt(cantidad) 
       });
     }
     await carrito.save();

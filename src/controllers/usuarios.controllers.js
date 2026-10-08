@@ -65,6 +65,7 @@ export const registrarUsuario = async (req, res) => {
       password,
       codigoVerificacion,
       fechaExpiracionCodigo: tiempoExpiracion,
+      
     };
 
     if (rol && rol.trim() !== "") {

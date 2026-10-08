@@ -19,7 +19,6 @@ describe("Pruebas de Seguridad y Autenticación", () => {
 
   it("debe rechazar el acceso al endpoint de logout si no se procesa la solicitud", async () => {
     const res = await request(server.app).post("/api/usuarios/logout");
-    // Verifica que responda correctamente un código de éxito (200) o redirección/cierre
-    expect([200, 204]).toContain(res.statusCode);
+       expect([200, 204]).toContain(res.statusCode);
   });
 });
