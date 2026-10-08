@@ -49,7 +49,7 @@ export const crearReservaCancha = async (req, res) => {
       usuario: userId,
       cancha: canchaId,
       fechaJornada: fecha,
-      horaInicio: HORARIOS,
+      horaInicio: hora,
       estado: "confirmada",
     }));
 
@@ -71,7 +71,7 @@ export const obtenerHorariosDisponibles = async (req, res) => {
     const idCancha = req.query.canchaId || req.query.canchasId;
     const { fecha } = req.query;
 
-    const { error, value } = validaciónSchema.validate({
+    const { error, value } = validacionSchema.validate({
       canchaId: req.query.canchaId,
       fecha: req.query.fecha,
     });
@@ -129,7 +129,7 @@ export const obtenerHorariosDisponibles = async (req, res) => {
       );
 
       return {
-        cand: srv._id,
+        canchaId: srv._id,
         nombreCancha: srv.nombreCancha,
         precio: srv.precio,
         fecha,

@@ -1,4 +1,3 @@
-// src/helpers/constants.js
 
 export const MAPA_TURNOS = {
   "08:00": "09:00",
