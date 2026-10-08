@@ -108,3 +108,26 @@ export const restarCantidad = async (req, res) => {
       .json({ mensaje: "ocurrio un error al intentar restar un producto" });
   }
 };
+export const eliminarProductoDelCarrito = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { productoId } = req.params;
+
+    const carrito = await buscarOCrearCarrito(userId);
+
+     carrito.items = carrito.items.filter((item) => {
+      const idItem = item.producto?._id 
+        ? item.producto._id.toString() 
+        : item.producto.toString();
+      return idItem !== productoId;
+    });
+
+    await carrito.save();
+    await carrito.populate("items.producto", "nombreProducto precio imagen");
+
+    res.status(200).json({ mensaje: "Producto eliminado del carrito", carrito });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: "Error al eliminar el producto del carrito" });
+  }
+};
