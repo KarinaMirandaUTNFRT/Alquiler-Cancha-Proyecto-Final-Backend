@@ -1,7 +1,7 @@
+import mongoose from "mongoose";
 import { Reserva } from "../models/reserva.js";
 import Cancha from "../models/cancha.js";
-import mongoose from "mongoose";
-import { MAPA_TURNOS, HORARIOS } from "../helpers/constants.js";
+import { HORARIOS} from "../helpers/constants.js";
 
 export const crearReservaCancha = async (req, res) => {
   try {
@@ -71,86 +71,67 @@ export const obtenerHorariosDisponibles = async (req, res) => {
     const idCancha = req.query.canchaId || req.query.canchasId;
     const { fecha } = req.query;
 
-    const { error, value } = validacionSchema.validate({
-      canchaId: req.query.canchaId,
-      fecha: req.query.fecha,
-    });
+    console.log("--> Consultando disponibilidad para:", { idCancha, fecha });
 
-    if (error) return res.status(400).json({ error: error.details });
     if (!idCancha || !fecha) {
-      return res.status(400).json({ mensaje: "La fecha es obligatoria" });
+      return res.status(400).json({
+        success: false,
+        mensaje: "Tanto la cancha como la fecha son obligatorias.",
+      });
     }
+
     if (!mongoose.Types.ObjectId.isValid(idCancha)) {
       return res.status(400).json({
-        mensaje: "El ID de la cancha proporcionado no es válido.",
+        success: false,
+        mensaje: "El ID de la cancha no es un ObjectId válido.",
       });
     }
-    const regexFecha = /^\d{4}-\d{2}-\d{2}$/;
-    if (!regexFecha.test(fecha) || isNaN(Date.parse(fecha))) {
-      return res.status(400).json({
-        mensaje:
-          "El formato de fecha debe ser YYYY-MM-DD y ser una fecha válida.",
+
+    // 1. Buscar la cancha
+    const cancha = await Cancha.findById(idCancha).select("nombreCancha precio");
+    if (!cancha) {
+      return res.status(404).json({
+        success: false,
+        mensaje: "Cancha no encontrada.",
       });
     }
-    let listaIds = [];
-    if (idCancha) {
-      listaIds = idCancha.split(",").map((id) => id.trim());
-    } else if (idCancha) {
-      listaIds = [idCancha.trim()];
-    }
 
-    if (listaIds.length === 0) {
-      return res
-        .status(400)
-        .json({ mensaje: "Debes enviar al menos una cancha " });
-    }
+    // 2. Buscar reservas ocupadas (ajusta 'fechaJornada' si tu campo en la BD se llama 'fecha')
+    const reservasOcupadas = await Reserva.find({
+      cancha: idCancha,
+      $or: [{ fechaJornada: fecha }, { fecha: fecha }],
+      estado: { $ne: "cancelada" },
+    }).select("horaInicio");
 
-    const canchas = await Cancha.find({ _id: { $in: listaIds } }).select(
-      "nombreCancha precio",
+    const horasOcupadas = reservasOcupadas.map((r) => r.horaInicio);
+
+    // 3. Filtrar turnos libres usando HORARIOS de constants.js
+    const turnosLibres = HORARIOS.filter(
+      (hora) => !horasOcupadas.includes(hora)
     );
 
-    const reservasOcupadas = await Reserva.find({
-      cancha: { $in: listaIds },
-      fechaJornada: fecha,
-      estado: { $ne: "cancelada" },
-    }).select("cancha horaInicio");
-
-    const todosLosTurnos = Object.keys(MAPA_TURNOS);
-
-    const disponibilidadCanchas = canchas.map((srv) => {
-      const srvIdStr = srv._id.toString();
-
-      const horasOcupadas = reservasOcupadas
-        .filter((r) => r.cancha.toString() === srvIdStr)
-        .map((r) => r.horaInicio);
-
-      const turnosLibres = todosLosTurnos.filter(
-        (hora) => !horasOcupadas.includes(hora),
-      );
-
-      return {
-        canchaId: srv._id,
-        nombreCancha: srv.nombreCancha,
-        precio: srv.precio,
-        fecha,
-        turnosLibres,
-        turnosOcupados: horasOcupadas,
-      };
-    });
-
     return res.status(200).json({
+      success: true,
       fecha,
-      canchas: disponibilidadCanchas,
+      canchas: [
+        {
+          _id: cancha._id,
+          canchaId: cancha._id,
+          nombreCancha: cancha.nombreCancha,
+          precio: cancha.precio,
+          fecha,
+          turnosLibres,
+          turnosOcupados: horasOcupadas,
+        },
+      ],
     });
   } catch (error) {
-    console.error("Error al consultar disponibilidad:", error);
+    console.error("DETALLE DEL ERROR 500 EN BACKEND:", error);
     return res.status(500).json({
       success: false,
       error: {
         mensaje: "Error al consultar disponibilidad",
-        ...(process.env.NODE_ENV === "development" && {
-          detalle: error.message,
-        }),
+        detalle: error.message,
       },
     });
   }
