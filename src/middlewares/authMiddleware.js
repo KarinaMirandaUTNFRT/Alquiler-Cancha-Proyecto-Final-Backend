@@ -2,13 +2,19 @@ import jwt from "jsonwebtoken";
 
 export const autenticador = (req, res, next) => {
   try {
-    const token = req.cookies.token;
+    //const token = req.cookies.token;
 
+    let token = req.header("x-token") || req.cookies?.token;
+
+    if (!token && req.headers.authorization) {
+     token = req.headers.authorization.replace("Bearer ", "").trim();
+    }
+    
     if (!token) {
       return res
         .status(401)
         .json({ mensaje: "Acceso no autorizado, token faltante." });
-    }
+     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 

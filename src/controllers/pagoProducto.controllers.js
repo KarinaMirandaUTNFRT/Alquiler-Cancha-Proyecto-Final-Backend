@@ -68,6 +68,7 @@ export const crearPreferenciaPago = async (req, res) => {
       sandbox_init_point: result.sandbox_init_point,
       ordenId: nuevaOrden._id,
     });
+    
   } catch (error) {
     console.error(error);
     return res

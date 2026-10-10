@@ -8,7 +8,8 @@ import { validarFirmaMercadoPago } from "../helpers/validarWebhookMP.js";
 
 const router = Router();
 
-router.route("/crear-preferencia").post(autenticador, crearPreferenciaReserva);
+router.route("/crear-preferencia")
+.post(autenticador, crearPreferenciaReserva);
 
 router.post(
   "/webhook",
