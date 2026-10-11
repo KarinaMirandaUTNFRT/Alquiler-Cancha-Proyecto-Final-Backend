@@ -85,11 +85,9 @@ export const crearReservaCancha = async (req, res) => {
       });
     }
 
-    // 1. Limpiar strings de posibles espacios en blanco
     const turnosLimpios = turnos.map((h) => String(h).trim());
     const turnosUnicos = [...new Set(turnosLimpios)];
 
-    // 2. Validar contra MAPA_TURNOS
     const invalidos = turnosUnicos.filter((hora) => !MAPA_TURNOS || !MAPA_TURNOS[hora]);
     if (invalidos.length > 0) {
       return res.status(400).json({
@@ -103,13 +101,16 @@ export const crearReservaCancha = async (req, res) => {
         .status(404)
         .json({ mensaje: "La cancha solicitada no existe" });
     }
-
-    // 3. Verificar si ya hay turnos confirmados para esa fecha y cancha
+     const hace15Minutos = new Date(Date.now() - 15 * 60 * 1000);
+   
     const turnosOcupados = await Reserva.find({
       cancha: canchaId,
       fechaJornada: fecha,
-      horaInicio: { $in: turnosUnicos },
-      estado: "confirmada",
+      horaInicio: { $in: turnosUnicos },$or: [
+        { estado: "confirmada" },
+        { estado: "pendiente", createdAt: { $gte: hace15Minutos } },
+      ],
+      
     }).select("horaInicio");
 
     if (turnosOcupados.length > 0) {
@@ -126,7 +127,7 @@ export const crearReservaCancha = async (req, res) => {
       cancha: canchaId,
       fechaJornada: fecha,
       horaInicio: hora,
-      estado: "confirmada",
+      estado: "pendiente",
     }));
 
     const reservasGuardadas = await Reserva.insertMany(nuevasReservas);
