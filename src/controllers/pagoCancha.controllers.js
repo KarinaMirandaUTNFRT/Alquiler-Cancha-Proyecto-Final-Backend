@@ -110,43 +110,58 @@ export const crearPreferenciaReserva = async (req, res) => {
 };
 export const recibirWebhookReserva = async (req, res) => {
   try {
-    // 1. Validar la autenticidad de la firma[cite: 20]
+    // 1. Validar autenticidad de la firma HMAC SHA-256
     const esFirmaValida = validarFirmaMercadoPago(req);
     if (!esFirmaValida) {
-      console.error("Firma de webhook de Mercado Pago no válida o ausente.");
+      console.error("🚫 Intento de webhook rechazado: Firma inválida o no coincide.");
       return res.status(403).json({ error: "Firma inválida" });
     }
 
-    const tipo = req.body?.type || req.query?.type;
+    // 2. Extraer el tipo de evento y el paymentId
+    const tipo = req.body?.type || req.query?.type || req.body?.topic;
 
     if (tipo === "payment") {
-      const paymentId = req.body?.data?.id || req.query?.["data.id"] || req.query?.id;
+      const paymentId =
+        req.body?.data?.id || req.query?.["data.id"] || req.query?.id;
 
-      // 2. Consultar el pago en Mercado Pago (SDK o Fetch) para obtener external_reference real
-      // const pago = await paymentClient.get({ id: paymentId });
-      // const idReserva = pago.external_reference;
+      if (paymentId) {
+        // 3. Consultar el pago directamente a la API de Mercado Pago
+        const paymentClient = new Payment(client);
+        const pago = await paymentClient.get({ id: paymentId });
 
-      const idReserva = req.body?.external_reference || req.query?.external_reference;
+        console.log(`🔔 Webhook recibido: Pago ${paymentId} | Estado: ${pago.status}`);
 
-      // 3. Verificar que la reserva exista antes de actualizar su estado[cite: 20]
-      if (idReserva) {
-        const reserva = await Reserva.findById(idReserva);
-        if (!reserva) {
-          console.warn(`Reserva con ID ${idReserva} no encontrada en BD`);
-          return res.status(404).json({ error: "Reserva no encontrada" });
-        }
+        // 4. Si fue aprobado, actualizar la base de datos
+        if (pago.status === "approved") {
+          const ordenId = pago.external_reference;
 
-        if (reserva.estado !== "confirmada") {
-          reserva.estado = "confirmada";
-          await reserva.save();
+          if (ordenId) {
+            const orden = await OrdenCancha.findById(ordenId);
+
+            if (orden && orden.estado !== "pagada") {
+              orden.estado = "pagada";
+              orden.paymentId = String(paymentId);
+              await orden.save();
+
+              // Extraer IDs de reservas y confirmarlas
+              const idsReservas = orden.items.map((item) => item.reserva);
+
+              await Reserva.updateMany(
+                { _id: { $in: idsReservas } },
+                { $set: { estado: "confirmada" } }
+              );
+
+              console.log(`✅ Orden ${ordenId} y Reservas ${idsReservas.join(", ")} confirmadas con éxito.`);
+            }
+          }
         }
       }
     }
 
-    // Mercado Pago requiere un status 200 para confirmar la recepción
+    // Mercado Pago requiere un status 200 para dar por entregada la notificación
     return res.status(200).send("OK");
   } catch (error) {
-    console.error("Error al procesar webhook de pago:", error);
-    return res.status(500).json({ error: "Error interno al procesar webhook" });
+    console.error("❌ Error interno al procesar el webhook:", error);
+    return res.status(500).json({ error: "Error al procesar notificación" });
   }
 };

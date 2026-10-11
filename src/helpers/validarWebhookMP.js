@@ -1,9 +1,10 @@
 import crypto from "crypto";
 
 export const validarFirmaMercadoPago = (req) => {
-  const secret = process.env.MP_WEBHOOK_SECRET;
+  const secret = process.env.MP_WEBHOOK_SECRET?.trim();
+
   if (!secret) {
-    console.warn("Advertencia: MP_WEBHOOK_SECRET no está configurado.");
+    console.error("❌ Error de seguridad: MP_WEBHOOK_SECRET no está configurado en las variables de entorno.");
     return false;
   }
 
@@ -11,10 +12,11 @@ export const validarFirmaMercadoPago = (req) => {
   const xRequestId = req.headers["x-request-id"];
 
   if (!xSignature || !xRequestId) {
+    console.warn("⚠️ Petición rechazada: Faltan cabeceras x-signature o x-request-id.");
     return false;
   }
 
-  // x-signature tiene el formato: "ts=1700000000,v1=hash..."
+  // Extraer ts y v1 del header "ts=...,v1=..."
   const partes = xSignature.split(",");
   let ts = "";
   let v1 = "";
@@ -22,31 +24,31 @@ export const validarFirmaMercadoPago = (req) => {
   partes.forEach((parte) => {
     const [clave, valor] = parte.split("=");
     if (clave && valor) {
-      const claveLimpia = clave.trim();
+      const claveLimpia = clave.trim().toLowerCase();
       if (claveLimpia === "ts") ts = valor.trim();
       if (claveLimpia === "v1") v1 = valor.trim();
     }
   });
 
   if (!ts || !v1) {
+    console.warn("⚠️ Petición rechazada: Estructura de x-signature incompleta.");
     return false;
   }
 
-  // Obtener el ID del recurso que envía MP en query o body
+  // Obtener el ID del recurso (Mercado Pago lo envía habitualmente como query parameter)
   const dataId =
-    req.body?.data?.id ||
     req.query?.["data.id"] ||
-    req.query?.id;
+    req.query?.id ||
+    req.body?.data?.id;
 
-  // Construir el manifest según la especificación de Mercado Pago
-  // Formato: id:[data.id_url];request-id:[x-request-id_header];ts:[ts_header];
+  // Formato oficial de Mercado Pago: id:[data.id];request-id:[x-request-id];ts:[ts];
   let manifest = "";
   if (dataId) {
-    manifest += `id:${dataId};`;
+    manifest += `id:${String(dataId).toLowerCase()};`;
   }
   manifest += `request-id:${xRequestId};ts:${ts};`;
 
-  // Calcular el hash HMAC SHA-256
+  // Generar hash HMAC SHA-256
   const hashGenerado = crypto
     .createHmac("sha256", secret)
     .update(manifest)
