@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { Reserva } from "../models/reserva.js";
 import Cancha from "../models/cancha.js";
-import { HORARIOS} from "../helpers/constants.js";
+import { MAPA_TURNOS} from "../helpers/constants.js";
 
 export const crearReservaCancha = async (req, res) => {
   try {
@@ -16,7 +16,7 @@ export const crearReservaCancha = async (req, res) => {
 
     const turnosUnicos = [...new Set(turnos)];
 
-    const invalidos = turnosUnicos.filter((hora) => !HORARIOS[hora]);
+    const invalidos = turnosUnicos.filter((hora) => !MAPA_TURNOS[hora]);
     if (invalidos.length > 0) {
       return res.status(400).json({
         mensaje: `Los siguientes horarios no son válidos: ${invalidos.join(", ")}`,
