@@ -126,7 +126,7 @@ export const crearReservaCancha = async (req, res) => {
       cancha: canchaId,
       fechaJornada: fecha,
       horaInicio: hora,
-      estado: "pendiente",
+      estado: "confirmada",
     }));
 
     const reservasGuardadas = await Reserva.insertMany(nuevasReservas);
