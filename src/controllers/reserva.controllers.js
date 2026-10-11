@@ -1,71 +1,9 @@
 import mongoose from "mongoose";
 import { Reserva } from "../models/reserva.js";
 import Cancha from "../models/cancha.js";
-import { MAPA_TURNOS} from "../helpers/constants.js";
+import  {MAPA_TURNOS, HORARIOS} from "../helpers/constants.js";
 
-export const crearReservaCancha = async (req, res) => {
-  try {
-    const { canchaId, fecha, turnos } = req.body;
-    const userId = req.user.id;
 
-    if (!canchaId || !fecha || !Array.isArray(turnos) || turnos.length === 0) {
-      return res.status(400).json({
-        mensaje: "Debes enviar cancha, fecha y al menos un turno",
-      });
-    }
-
-    const turnosUnicos = [...new Set(turnos)];
-
-    const invalidos = turnosUnicos.filter((hora) => !MAPA_TURNOS[hora]);
-    if (invalidos.length > 0) {
-      return res.status(400).json({
-        mensaje: `Los siguientes horarios no son válidos: ${invalidos.join(", ")}`,
-      });
-    }
-
-    const canchaExiste = await Cancha.findById(canchaId);
-    if (!canchaExiste) {
-      return res
-        .status(404)
-        .json({ mensaje: "La cancha solicitada no existe" });
-    }
-
-    const turnosOcupados = await Reserva.find({
-      cancha: canchaId,
-      fechaJornada: fecha,
-      horaInicio: { $in: turnosUnicos },
-      estado: "confirmada",
-    }).select("horaInicio");
-
-    if (turnosOcupados.length > 0) {
-      const horasReservadas = turnosOcupados.map((t) => t.horaInicio);
-      return res.status(409).json({
-        mensaje: `No se pudo reservar. Los siguientes turnos ya están ocupados: ${horasReservadas.join(", ")}`,
-        turnosEnConflicto: horasReservadas,
-      });
-    }
-
-    const nuevasReservas = turnosUnicos.map((hora) => ({
-      usuario: userId,
-      cancha: canchaId,
-      fechaJornada: fecha,
-      horaInicio: hora,
-      estado: "confirmada",
-    }));
-
-    const reservasGuardadas = await Reserva.insertMany(nuevasReservas);
-
-    res.status(201).json({
-      mensaje: `Reserva confirmada con éxito para ${reservasGuardadas.length} turno(s)`,
-      reservas: reservasGuardadas,
-    });
-  } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ mensaje: "Error al procesar la reserva de la cancha" });
-  }
-};
 export const obtenerHorariosDisponibles = async (req, res) => {
   try {
     const idCancha = req.query.canchaId || req.query.canchasId;
@@ -136,7 +74,74 @@ export const obtenerHorariosDisponibles = async (req, res) => {
     });
   }
 };
+export const crearReservaCancha = async (req, res) => {
+  try {
+    const { canchaId, fecha, turnos } = req.body;
+    const userId = req.user?.id || req.user?._id || req.usuario?._id;
 
+    if (!canchaId || !fecha || !Array.isArray(turnos) || turnos.length === 0) {
+      return res.status(400).json({
+        mensaje: "Debes enviar cancha, fecha y al menos un turno",
+      });
+    }
+
+    // 1. Limpiar strings de posibles espacios en blanco
+    const turnosLimpios = turnos.map((h) => String(h).trim());
+    const turnosUnicos = [...new Set(turnosLimpios)];
+
+    // 2. Validar contra MAPA_TURNOS
+    const invalidos = turnosUnicos.filter((hora) => !MAPA_TURNOS || !MAPA_TURNOS[hora]);
+    if (invalidos.length > 0) {
+      return res.status(400).json({
+        mensaje: `Los siguientes horarios no son válidos: ${invalidos.join(", ")}`,
+      });
+    }
+
+    const canchaExiste = await Cancha.findById(canchaId);
+    if (!canchaExiste) {
+      return res
+        .status(404)
+        .json({ mensaje: "La cancha solicitada no existe" });
+    }
+
+    // 3. Verificar si ya hay turnos confirmados para esa fecha y cancha
+    const turnosOcupados = await Reserva.find({
+      cancha: canchaId,
+      fechaJornada: fecha,
+      horaInicio: { $in: turnosUnicos },
+      estado: "confirmada",
+    }).select("horaInicio");
+
+    if (turnosOcupados.length > 0) {
+      const horasReservadas = turnosOcupados.map((t) => t.horaInicio);
+      return res.status(409).json({
+        mensaje: `No se pudo reservar. Los siguientes turnos ya están ocupados: ${horasReservadas.join(", ")}`,
+        turnosEnConflicto: horasReservadas,
+      });
+    }
+
+    // 4. Crear las reservas (en estado 'pendiente' a la espera del pago en MP)
+    const nuevasReservas = turnosUnicos.map((hora) => ({
+      usuario: userId,
+      cancha: canchaId,
+      fechaJornada: fecha,
+      horaInicio: hora,
+      estado: "pendiente",
+    }));
+
+    const reservasGuardadas = await Reserva.insertMany(nuevasReservas);
+
+    return res.status(201).json({
+      mensaje: `Reserva registrada con éxito para ${reservasGuardadas.length} turno(s)`,
+      reservas: reservasGuardadas,
+    });
+  } catch (error) {
+    console.error("Error en crearReservaCancha:", error);
+    return res
+      .status(500)
+      .json({ mensaje: "Error al procesar la reserva de la cancha", detalle: error.message });
+  }
+};
 export const obtenerMisReservasCancha = async (req, res) => {
   try {
     const userId = req.user.id;
