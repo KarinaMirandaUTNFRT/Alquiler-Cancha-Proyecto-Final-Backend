@@ -16,7 +16,7 @@ export const crearReservaCancha = async (req, res) => {
 
     const turnosUnicos = [...new Set(turnos)];
 
-    const invalidos = turnosUnicos.filter((hora) => !MAPA_TURNOS[hora]);
+    const invalidos = turnosUnicos.filter((hora) => !HORARIOS[hora]);
     if (invalidos.length > 0) {
       return res.status(400).json({
         mensaje: `Los siguientes horarios no son válidos: ${invalidos.join(", ")}`,
