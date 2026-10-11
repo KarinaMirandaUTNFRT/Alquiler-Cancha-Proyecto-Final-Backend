@@ -81,7 +81,8 @@ export const crearPreferenciaReserva = async (req, res) => {
         failure: `${frontendUrl}/checkout/resultado?status=failure`,
         pending: `${frontendUrl}/checkout/resultado?status=pending`,
       },
-      auto_return: "aproved",
+      auto_return: "approved",
+      external_reference: nuevaOrden._id.toString(),
     };
 
     const result = await preference.create({ body: preferenceData });
