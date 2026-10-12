@@ -75,13 +75,15 @@ export const crearPreferenciaReserva = async (req, res) => {
     const preferenceData = {
       items: itemsMP,
       external_reference: nuevaOrden._id.toString(),
-      notification_url: `${backendUrl}/api/pagoCancha/webhook`,
-      back_urls: {
-        success: `${frontendUrl}/checkout/resultado?status=success`,
-        failure: `${frontendUrl}/checkout/resultado?status=failure`,
-        pending: `${frontendUrl}/checkout/resultado?status=pending`,
-      },
-      auto_return: "approved",
+      notification_url: `${process.env.BACKEND_URL || 
+        "https://alquiler-cancha-proyecto-final-backend.onrender.com"}/api/pagoCancha/webhook`,
+      //notification_url: `${backendUrl}/api/pagoCancha/webhook`,
+      // back_urls: {
+      //   success: `${frontendUrl}/checkout/resultado?status=success`,
+      //   failure: `${frontendUrl}/checkout/resultado?status=failure`,
+      //   pending: `${frontendUrl}/checkout/resultado?status=pending`,
+      // },
+      // auto_return: "approved",
       
     };
 

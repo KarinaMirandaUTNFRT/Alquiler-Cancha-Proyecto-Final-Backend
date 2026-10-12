@@ -36,7 +36,19 @@ const reservaSchema = new Schema(
   { timestamps: true },
 );
 
-reservaSchema.index({ cancha: 1, fechaJornada: 1, horaInicio: 1, estado: 1 });
+reservaSchema.index({ 
+  cancha: 1, 
+  fechaJornada: 1, 
+  horaInicio: 1, 
+  estado: 1 });
+
+  reservaSchema.index(
+  { createdAt: 1 },
+  { 
+    expireAfterSeconds: 900, // segundos
+    partialFilterExpression: { estado: "pendiente" } 
+  }
+);
 
 reservaSchema.virtual("fechaFormateada").get(function () {
   if (!this.fechaJornada) return null;
