@@ -4,7 +4,7 @@ import {
   crearPreferenciaReserva,
   recibirWebhookReserva,
 } from "../controllers/pagoCancha.controllers.js";
-import { validarFirmaMercadoPago } from "../helpers/validarWebhookMP.js";
+//import { validarFirmaMercadoPago } from "../helpers/validarWebhookMP.js";
 
 const router = Router();
 
