@@ -141,8 +141,8 @@ export const recibirWebhookReserva = async (req, res) => {
           if (ordenId) {
             const orden = await OrdenCancha.findById(ordenId);
 
-            if (orden && orden.estado !== "pagada") {
-              orden.estado = "pagada";
+            if (orden && orden.estado !== "confirmada") {
+              orden.estado = "confirmada";
               orden.paymentId = String(paymentId);
               await orden.save();
 
