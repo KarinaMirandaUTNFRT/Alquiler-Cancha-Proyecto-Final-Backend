@@ -1,7 +1,7 @@
 import { MercadoPagoConfig, Preference, Payment } from "mercadopago";
 import { Reserva } from "../models/reserva.js";
 import OrdenCancha from "../models/ordenCancha.js";
-import { validarFirmaMercadoPago } from "../helpers/validarWebhookMP.js";
+import { MerchantOrder } from "mercadopago";
 
 const client = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN?.trim(),
@@ -113,58 +113,64 @@ export const crearPreferenciaReserva = async (req, res) => {
 };
 export const recibirWebhookReserva = async (req, res) => {
   try {
-    // 1. Validar autenticidad de la firma HMAC SHA-256
-    // const esFirmaValida = validarFirmaMercadoPago(req);
-    // if (!esFirmaValida) {
-    //   console.error("🚫 Intento de webhook rechazado: Firma inválida o no coincide.");
-    //   return res.status(403).json({ error: "Firma inválida" });
-    // }
-
-    // 2. Extraer el tipo de evento y el paymentId
     const tipo = req.body?.type || req.query?.type || req.body?.topic;
+    const dataId = req.body?.data?.id || req.query?.["data.id"] || req.query?.id;
 
+    if (!dataId) {
+      return res.status(200).send("OK");
+    }
+
+    let pagoId = null;
+
+    // Caso 1: Notificación directa de pago
     if (tipo === "payment") {
-      const paymentId =
-        req.body?.data?.id || req.query?.["data.id"] || req.query?.id;
+      pagoId = dataId;
+    }
 
-      if (paymentId) {
-        // 3. Consultar el pago directamente a la API de Mercado Pago
-        const paymentClient = new Payment(client);
-        const pago = await paymentClient.get({ id: paymentId });
+    // Caso 2: Notificación de orden comercial (merchant_order)
+    if (tipo === "topic_merchant_order_wh" || tipo === "merchant_order") {
+      const merchantOrderClient = new MerchantOrder(client);
+      const ordenMP = await merchantOrderClient.get({ merchantOrderId: dataId });
 
-        console.log(`🔔 Webhook recibido: Pago ${paymentId} | Estado: ${pago.status}`);
-
-        // 4. Si fue aprobado, actualizar la base de datos
-        if (pago.status === "approved") {
-          const ordenId = pago.external_reference;
-
-          if (ordenId) {
-            const orden = await OrdenCancha.findById(ordenId);
-
-            if (orden && orden.estado !== "aprobado") {
-              orden.estado = "aprobado";
-              orden.paymentId = String(paymentId);
-              await orden.save();
-
-              // Extraer IDs de reservas y confirmarlas
-              const idsReservas = orden.items.map((item) => item.reserva);
-
-              await Reserva.updateMany(
-                { _id: { $in: idsReservas } },
-                { $set: { estado: "confirmada" } }
-              );
-
-              console.log(`✅ Orden ${ordenId} y Reservas ${idsReservas.join(", ")} confirmadas con éxito.`);
-            }
-          }
-        }
+      // Obtener el último pago aprobado de la orden si existe
+      const pagoAprobado = ordenMP.payments?.find((p) => p.status === "approved");
+      if (pagoAprobado) {
+        pagoId = pagoAprobado.id;
+      } else {
+        return res.status(200).send("Orden sin pagos aprobados aún");
       }
     }
 
-    // Mercado Pago requiere un status 200 para dar por entregada la notificación
+    if (!pagoId) {
+      return res.status(200).send("Evento no procesable");
+    }
+
+    // Consultar el detalle del pago
+    const paymentClient = new Payment(client);
+    const pago = await paymentClient.get({ id: pagoId });
+
+    if (pago.status === "approved") {
+      const ordenId = pago.external_reference;
+      const orden = await OrdenCancha.findById(ordenId);
+
+      if (orden && orden.estado !== "aprobado") {
+        orden.estado = "aprobado";
+        orden.paymentId = String(pagoId);
+        await orden.save();
+
+        const idsReservas = orden.items.map((item) => item.reserva);
+        await Reserva.updateMany(
+          { _id: { $in: idsReservas } },
+          { $set: { estado: "confirmada" } }
+        );
+
+        console.log(`✅ Orden ${ordenId} y Reservas ${idsReservas.join(", ")} confirmadas con éxito.`);
+      }
+    }
+
     return res.status(200).send("OK");
   } catch (error) {
-    console.error("❌ Error interno al procesar el webhook:", error);
+    console.error("❌ Error en webhook:", error);
     return res.status(500).json({ error: "Error al procesar notificación" });
   }
 };
