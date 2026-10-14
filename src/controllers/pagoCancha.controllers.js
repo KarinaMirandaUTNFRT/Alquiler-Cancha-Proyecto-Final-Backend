@@ -65,48 +65,62 @@ export const crearPreferenciaReserva = async (req, res) => {
 
     await nuevaOrden.save();
 
-    const backendUrl = process.env.BACKEND_URL?.trim().replace(/\/$/, "");
-    const frontendUrl = process.env.PAYMENT_FRONTEND_URL?.trim().replace(
-      /\/$/,
-      "",
-    );
+    // 2. Armar preferenceData asegurando URLs válidas
+const preferenceData = {
+  items: itemsParaMP,
+  external_reference: nuevaOrden._id.toString(),
+  notification_url: "https://alquiler-cancha-proyecto-final-backend.onrender.com/api/pagoCancha/webhook",
+  back_urls: {
+    success: "https://mercadopago.com", // Evita localhost aquí para no ser rechazado por la API
+    failure: "https://mercadopago.com",
+    pending: "https://mercadopago.com"
+  }
+  // auto_return: "approved" // Coméntalo mientras pruebes en localhost
+};
 
-    const preference = new Preference(client);
+// 3. Crear la preferencia
+const preference = new Preference(client);
+const result = await preference.create({ body: preferenceData });
 
-    const preferenceData = {
-      items: itemsParaMP, // Tu arreglo de canchas/reservas
+// 4. Actualizar la orden con el preferenceId
+nuevaOrden.preferenceId = result.id;
+await nuevaOrden.save();
 
-      // 1. OBLIGATORIO: Fuerza a MP a enviar el webhook a tu backend en Render
-      notification_url:
-        "https://alquiler-cancha-proyecto-final-backend.onrender.com/api/pagoCancha/webhook",
+await Reserva.updateMany(
+  { _id: { $in: idsAProcesar } },
+  { $set: { preferenceId: result.id, estado: "pendiente" } }
+);
 
-      // 2. OBLIGATORIO: Vincula el pago a la orden creada para poder buscarla en la BD
-      external_reference: nuevaOrden._id.toString(),
-      //notification_url: `${backendUrl}/api/pagoCancha/webhook`,
-      back_urls: {
-        success: `${frontendUrl}/checkout/resultado?status=success`,
-        failure: `${frontendUrl}/checkout/resultado?status=failure`,
-        pending: `${frontendUrl}/checkout/resultado?status=pending`,
-      },
-      auto_return: "approved",
-    };
+return res.status(201).json({
+  mensaje: "Orden guardada y preferencia generada con éxito",
+  init_point: result.init_point,
+  sandbox_init_point: result.sandbox_init_point,
+  ordenId: nuevaOrden._id
+});
 
-    const result = await preference.create({ body: preferenceData });
+    // const backendUrl = process.env.BACKEND_URL?.trim().replace(/\/$/, "");
+    // const frontendUrl = process.env.PAYMENT_FRONTEND_URL?.trim().replace(
+    //   /\/$/,
+    //   "",
+    // );
 
-    nuevaOrden.preferenceId = result.id;
-    await nuevaOrden.save();
+    // const preference = new Preference(client);
+    // const result = await preference.create({ body: preferenceData });
 
-    await Reserva.updateMany(
-      { _id: { $in: idsAProcesar } },
-      { $set: { preferenceId: result.id, estado: "pendiente" } },
-    );
+    // nuevaOrden.preferenceId = result.id;
+    // await nuevaOrden.save();
 
-    return res.status(201).json({
-      mensaje: "Orden guardada en BD y preferencia de pago generada con éxito",
-      init_point: result.init_point,
-      sandbox_init_point: result.sandbox_init_point,
-      ordenId: nuevaOrden._id,
-    });
+    // await Reserva.updateMany(
+    //   { _id: { $in: idsAProcesar } },
+    //   { $set: { preferenceId: result.id, estado: "pendiente" } },
+    // );
+
+    // return res.status(201).json({
+    //   mensaje: "Orden guardada en BD y preferencia de pago generada con éxito",
+    //   init_point: result.init_point,
+    //   sandbox_init_point: result.sandbox_init_point,
+    //   ordenId: nuevaOrden._id,
+    // });
   } catch (error) {
     console.error("Error al crear la orden y la preferencia de pago:", error);
     return res.status(500).json({
