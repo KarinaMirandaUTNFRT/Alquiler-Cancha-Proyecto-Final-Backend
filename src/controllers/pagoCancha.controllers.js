@@ -65,6 +65,14 @@ export const crearPreferenciaReserva = async (req, res) => {
 
     await nuevaOrden.save();
 
+// Armamos los ítems con el formato requerido por Mercado Pago
+const itemsParaMP = itemsOrden.map((item) => ({
+  title: "Alquiler de Cancha",
+  quantity: 1,
+  unit_price: Number(item.precio || montoTotal),
+  currency_id: "ARS",
+}));
+
     // 2. Armar preferenceData asegurando URLs válidas
 const preferenceData = {
   items: itemsParaMP,
@@ -125,7 +133,7 @@ return res.status(201).json({
     console.error("Error al crear la orden y la preferencia de pago:", error);
     return res.status(500).json({
       mensaje: "Ocurrió un error al procesar la solicitud",
-      error: error.message,
+      error: error.message || error
     });
   }
 };
