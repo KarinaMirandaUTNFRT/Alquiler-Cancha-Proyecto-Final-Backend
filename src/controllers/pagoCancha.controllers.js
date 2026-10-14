@@ -79,9 +79,9 @@ const preferenceData = {
   external_reference: nuevaOrden._id.toString(),
   notification_url: "https://alquiler-cancha-proyecto-final-backend.onrender.com/api/pagoCancha/webhook",
   back_urls: {
-    success: `${FRONTEND_URL}/`,       // Te lleva al inicio de tu web si el pago sale bien
-    failure: `${FRONTEND_URL}/`,       // Te lleva al inicio si el pago es rechazado
-    pending: `${FRONTEND_URL}/`,       // Te lleva al inicio si queda pendiente
+    success: `${FRONTEND_URL}/mis-reservas`, // Te lleva al inicio de sus reservas si el pago sale bien
+    failure: `${FRONTEND_URL}/`, // Te lleva al inicio si el pago es rechazado
+    pending: `${FRONTEND_URL}/`, // Te lleva al inicio si queda pendiente
   },
    auto_return: "approved" // Redirige al usuario automáticamente a tu página en 5 segundos sin esperar a que toque el botón
 };
