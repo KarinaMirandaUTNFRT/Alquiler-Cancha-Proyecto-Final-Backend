@@ -72,7 +72,7 @@ const itemsParaMP = itemsOrden.map((item) => ({
   unit_price: Number(item.precio || montoTotal),
   currency_id: "ARS",
 }));
-
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
     // 2. Armar preferenceData asegurando URLs válidas
 const preferenceData = {
   items: itemsParaMP,
