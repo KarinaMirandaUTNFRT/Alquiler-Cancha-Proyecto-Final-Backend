@@ -66,25 +66,29 @@ export const crearPreferenciaReserva = async (req, res) => {
     await nuevaOrden.save();
 
     const backendUrl = process.env.BACKEND_URL?.trim().replace(/\/$/, "");
-    const frontendUrl = (
-      process.env.PAYMENT_FRONTEND_URL?.trim() 
-    ).replace(/\/$/, "");
+    const frontendUrl = process.env.PAYMENT_FRONTEND_URL?.trim().replace(
+      /\/$/,
+      "",
+    );
 
     const preference = new Preference(client);
 
     const preferenceData = {
-      items: itemsMP,
+      items: itemsParaMP, // Tu arreglo de canchas/reservas
+
+      // 1. OBLIGATORIO: Fuerza a MP a enviar el webhook a tu backend en Render
+      notification_url:
+        "https://alquiler-cancha-proyecto-final-backend.onrender.com/api/pagoCancha/webhook",
+
+      // 2. OBLIGATORIO: Vincula el pago a la orden creada para poder buscarla en la BD
       external_reference: nuevaOrden._id.toString(),
-      notification_url: `${process.env.BACKEND_URL || 
-        "https://alquiler-cancha-proyecto-final-backend.onrender.com"}/api/pagoCancha/webhook`,
       //notification_url: `${backendUrl}/api/pagoCancha/webhook`,
-      // back_urls: {
-      //   success: `${frontendUrl}/checkout/resultado?status=success`,
-      //   failure: `${frontendUrl}/checkout/resultado?status=failure`,
-      //   pending: `${frontendUrl}/checkout/resultado?status=pending`,
-      // },
-      // auto_return: "approved",
-      
+      back_urls: {
+        success: `${frontendUrl}/checkout/resultado?status=success`,
+        failure: `${frontendUrl}/checkout/resultado?status=failure`,
+        pending: `${frontendUrl}/checkout/resultado?status=pending`,
+      },
+      auto_return: "approved",
     };
 
     const result = await preference.create({ body: preferenceData });
@@ -114,7 +118,8 @@ export const crearPreferenciaReserva = async (req, res) => {
 export const recibirWebhookReserva = async (req, res) => {
   try {
     const tipo = req.body?.type || req.query?.type || req.body?.topic;
-    const dataId = req.body?.data?.id || req.query?.["data.id"] || req.query?.id;
+    const dataId =
+      req.body?.data?.id || req.query?.["data.id"] || req.query?.id;
 
     if (!dataId) {
       return res.status(200).send("OK");
@@ -130,10 +135,14 @@ export const recibirWebhookReserva = async (req, res) => {
     // Caso 2: Notificación de orden comercial (merchant_order)
     if (tipo === "topic_merchant_order_wh" || tipo === "merchant_order") {
       const merchantOrderClient = new MerchantOrder(client);
-      const ordenMP = await merchantOrderClient.get({ merchantOrderId: dataId });
+      const ordenMP = await merchantOrderClient.get({
+        merchantOrderId: dataId,
+      });
 
       // Obtener el último pago aprobado de la orden si existe
-      const pagoAprobado = ordenMP.payments?.find((p) => p.status === "approved");
+      const pagoAprobado = ordenMP.payments?.find(
+        (p) => p.status === "approved",
+      );
       if (pagoAprobado) {
         pagoId = pagoAprobado.id;
       } else {
@@ -161,10 +170,12 @@ export const recibirWebhookReserva = async (req, res) => {
         const idsReservas = orden.items.map((item) => item.reserva);
         await Reserva.updateMany(
           { _id: { $in: idsReservas } },
-          { $set: { estado: "confirmada" } }
+          { $set: { estado: "confirmada" } },
         );
 
-        console.log(`✅ Orden ${ordenId} y Reservas ${idsReservas.join(", ")} confirmadas con éxito.`);
+        console.log(
+          `✅ Orden ${ordenId} y Reservas ${idsReservas.join(", ")} confirmadas con éxito.`,
+        );
       }
     }
 
