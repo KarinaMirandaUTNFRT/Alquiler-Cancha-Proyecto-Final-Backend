@@ -146,6 +146,15 @@ export const crearReservaCancha = async (req, res) => {
 export const obtenerMisReservasCancha = async (req, res) => {
   try {
     const userId = req.user.id;
+    console.log("ID del usuario en el token:", userId);
+    // Prueba temporal: ver todas las reservas sin filtrar por usuario
+    const todas = await Reserva.find();
+    console.log("Total de reservas en la base de datos:", todas.length);
+    if (todas.length > 0) {
+      console.log("Campo 'usuario' de la primera reserva:", todas[0].usuario);
+    }
+    
+    
     const misReservas = await Reserva.find({ usuario: userId })
       .populate("cancha", "nombreCancha precio")
       .sort({ fechaJornada: -1, horaInicio: 1 });

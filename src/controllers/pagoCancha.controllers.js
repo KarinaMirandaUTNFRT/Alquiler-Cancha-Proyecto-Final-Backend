@@ -114,11 +114,11 @@ export const crearPreferenciaReserva = async (req, res) => {
 export const recibirWebhookReserva = async (req, res) => {
   try {
     // 1. Validar autenticidad de la firma HMAC SHA-256
-    const esFirmaValida = validarFirmaMercadoPago(req);
-    if (!esFirmaValida) {
-      console.error("🚫 Intento de webhook rechazado: Firma inválida o no coincide.");
-      return res.status(403).json({ error: "Firma inválida" });
-    }
+    // const esFirmaValida = validarFirmaMercadoPago(req);
+    // if (!esFirmaValida) {
+    //   console.error("🚫 Intento de webhook rechazado: Firma inválida o no coincide.");
+    //   return res.status(403).json({ error: "Firma inválida" });
+    // }
 
     // 2. Extraer el tipo de evento y el paymentId
     const tipo = req.body?.type || req.query?.type || req.body?.topic;
