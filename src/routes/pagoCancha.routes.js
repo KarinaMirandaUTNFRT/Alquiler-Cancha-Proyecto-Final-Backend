@@ -13,12 +13,12 @@ router.route("/crear-preferencia")
 
 router.post(
   "/webhook",
-  (req, res, next) => {
-    if (!validarFirmaMercadoPago(req)) {
-      return res.status(401).json({ error: "Firma inválida" });
-    }
-    next();
-  },
+  // (req, res, next) => {
+  //   if (!validarFirmaMercadoPago(req)) {
+  //     return res.status(401).json({ error: "Firma inválida" });
+  //   }
+  //   next();
+  // },
   recibirWebhookReserva,
 );
 
