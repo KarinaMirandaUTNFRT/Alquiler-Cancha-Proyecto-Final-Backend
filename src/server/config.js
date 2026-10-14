@@ -21,7 +21,7 @@ export default class Server {
     const defaultOrigins = [
       "http://localhost:5173",
       "http://localhost:3000",
-      "https://rollingclub.netlify.app",
+      "https://alquilercanchasnorte.netlify.app",
     ];
 
     // 2. Unificar y eliminar duplicados o cadenas vacías
