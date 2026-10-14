@@ -79,11 +79,11 @@ const preferenceData = {
   external_reference: nuevaOrden._id.toString(),
   notification_url: "https://alquiler-cancha-proyecto-final-backend.onrender.com/api/pagoCancha/webhook",
   back_urls: {
-    success: "https://mercadopago.com", // Evita localhost aquí para no ser rechazado por la API
-    failure: "https://mercadopago.com",
-    pending: "https://mercadopago.com"
-  }
-  // auto_return: "approved" // Coméntalo mientras pruebes en localhost
+    success: `${FRONTEND_URL}/`,       // Te lleva al inicio de tu web si el pago sale bien
+    failure: `${FRONTEND_URL}/`,       // Te lleva al inicio si el pago es rechazado
+    pending: `${FRONTEND_URL}/`,       // Te lleva al inicio si queda pendiente
+  },
+   auto_return: "approved" // Redirige al usuario automáticamente a tu página en 5 segundos sin esperar a que toque el botón
 };
 
 // 3. Crear la preferencia
