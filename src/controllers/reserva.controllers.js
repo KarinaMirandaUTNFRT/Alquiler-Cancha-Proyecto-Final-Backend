@@ -76,7 +76,7 @@ export const obtenerHorariosDisponibles = async (req, res) => {
 };
 export const crearReservaCancha = async (req, res) => {
   try {
-    const { canchaId, fecha, turnos } = req.body;
+    const { canchaId, fecha, turnos, nombreCliente } = req.body;
     const userId = req.user?.id || req.user?._id || req.usuario?._id;
 
     if (!canchaId || !fecha || !Array.isArray(turnos) || turnos.length === 0) {
@@ -94,8 +94,21 @@ export const crearReservaCancha = async (req, res) => {
         mensaje: `Los siguientes horarios no son válidos: ${invalidos.join(", ")}`,
       });
     }
+// 1. Buscamos el usuario si no se envió nombreCliente en el body
+    let nombreFinal = nombreCliente;
+    if (!nombreFinal && userId) {
+      const usuarioEncontrado = await Usuario.findById(userId);
+      nombreFinal = usuarioEncontrado?.nombre || usuarioEncontrado?.email?.split("@")[0];
+    }
 
-    const canchaExiste = await Cancha.findById(canchaId);
+    // Si aún así no hay nombre, ponemos un fallback por defecto
+    if (!nombreFinal) {
+      nombreFinal = "Cliente RollingClub";
+    }
+
+
+
+const canchaExiste = await Cancha.findById(canchaId);
     if (!canchaExiste) {
       return res
         .status(404)
