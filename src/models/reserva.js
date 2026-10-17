@@ -17,6 +17,14 @@ const reservaSchema = new Schema(
       ref: "Cancha",
       required: true,
     },
+    nombreCliente: {
+      type: String,
+      required: true,
+      trim: true,
+      minLength: 3,
+      maxLength: 100,
+    },
+
     fechaJornada: {
       type: String,
       required: true,

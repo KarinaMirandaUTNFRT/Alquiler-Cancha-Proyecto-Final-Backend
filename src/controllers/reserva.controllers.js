@@ -208,33 +208,54 @@ export const cancelarReservaCancha = async (req, res) => {
     res.status(500).json({ mensaje: "Error al cancelar la reserva" });
   }
 };
+
 export const listarReservas = async (req, res) => {
   try {
-    const limite = Math.max(1, parseInt(req.query.limite) || 10);
-    const pagina = Math.max(1, parseInt(req.query.pagina) || 1);
-    const salto = (pagina - 1) * limite;
-    
-    const [totalReservas, reservas] = await Promise.all([
-  Reserva.countDocuments(),
-  Reserva.find()
-      .populate("usuario", "nombreUsuario  email")
-      .populate("cancha", "nombreCancha  precio imagen")
-      .sort({ fechaJornada: -1, horaInicio: 1 })
-      .skip(salto)
-      .limit(limite)
-    ]);
+    const { estado } = req.query;
+    const filtro = {};
+
+    if (estado && ["pendiente", "confirmada", "cancelada"].includes(estado)) {
+      filtro.estado = estado;
+    }
+
+    const reservas = await Reserva.find(filtro)
+      .populate("cancha", "nombreCancha precio")
+      .populate("usuario", "nombre email")
+      .sort({ createdAt: -1 });
 
     res.status(200).json({
-      total: totalReservas,
-      totalPaginas: Math.ceil(totalReservas / limite),
-      paginaActual: pagina,
-      limitePorPagina: limite,
+      total: reservas.length,
       reservas,
     });
   } catch (error) {
-    console.error("Error al obtener reservas:", error);
-    res.status(500).json({
-      mensaje: "Ocurrió un error al obtener el historial de reservas",
+    console.error("Error al listar reservas:", error);
+    res.status(500).json({ mensaje: "Error al obtener las reservas" });
+  }
+};
+
+// PATCH /api/reservas/:id/cancelar
+export const cancelarReserva = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const reserva = await Reserva.findById(id);
+
+    if (!reserva) {
+      return res.status(404).json({ mensaje: "Reserva no encontrada" });
+    }
+
+    if (reserva.estado === "cancelada") {
+      return res.status(400).json({ mensaje: "La reserva ya está cancelada" });
+    }
+
+    reserva.estado = "cancelada";
+    await reserva.save();
+
+    res.status(200).json({
+      mensaje: "Reserva cancelada exitosamente",
+      reserva,
     });
+  } catch (error) {
+    console.error("Error al cancelar la reserva:", error);
+    res.status(500).json({ mensaje: "Error al cancelar la reserva" });
   }
 };
