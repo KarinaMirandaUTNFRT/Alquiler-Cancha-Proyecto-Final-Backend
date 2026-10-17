@@ -40,7 +40,7 @@ export const crearPreferenciaReserva = async (req, res) => {
 
       itemsMP.push({
         id: reserva._id.toString(),
-        title: `Reserva ${reserva.cancha?.nombreCancha || "Cancha"} (${reserva.fechaJornada || ""} ${reserva.horaInicio} hs)`,
+        title: `Reserva Cancha ${reserva.cancha?.nombreCancha || ""} - ${reserva.horaInicio || ""} hs`,
         unit_price: precioUnitario,
         quantity: 1,
         currency_id: "ARS",
