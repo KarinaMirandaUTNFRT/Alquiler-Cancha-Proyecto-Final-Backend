@@ -9,7 +9,7 @@ const client = new MercadoPagoConfig({
 
 export const crearPreferenciaReserva = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.id || req.user?._id || req.usuario?._id;
     const { reservaIds, reservaId } = req.body;
 
     const idsAProcesar = reservaIds || (reservaId ? [reservaId] : []);
@@ -36,12 +36,12 @@ export const crearPreferenciaReserva = async (req, res) => {
     const itemsOrden = [];
 
     for (const reserva of reservas) {
-      const precioUnitario = Number(reserva.cancha.precio);
+      const precioUnitario = Number(reserva.cancha.precio || 0);
       montoTotal += precioUnitario;
 
       itemsMP.push({
         id: reserva._id.toString(),
-        title: `Reserva ${reserva.cancha.nombreCancha} (${reserva.fechaJornada} - ${reserva.horaInicio} hs)`,
+        title: `Reserva ${reserva.cancha?.nombreCancha || "Cancha"} (${reserva.fechaJornada || ""} ${reserva.horaInicio} hs)`,
         unit_price: precioUnitario,
         quantity: 1,
         currency_id: "ARS",
@@ -50,7 +50,7 @@ export const crearPreferenciaReserva = async (req, res) => {
       itemsOrden.push({
         reserva: reserva._id,
         cancha: reserva.cancha._id,
-        nombreCancha: `Reserva ${reserva.cancha.nombreCancha} (${reserva.fechaJornada} ${reserva.horaInicio}hs)`,
+        nombreCancha: `Reserva ${reserva.cancha?.nombreCancha || "Cancha"} (${reserva.fechaJornada || ""} ${reserva.horaInicio}hs)`,
         precioUnitario,
         cantidad: 1,
       });
@@ -66,24 +66,24 @@ export const crearPreferenciaReserva = async (req, res) => {
     await nuevaOrden.save();
 
 // Armamos los ítems con el formato requerido por Mercado Pago
-const itemsParaMP = itemsOrden.map((item) => ({
-  title: "Alquiler de Cancha",
-  quantity: 1,
-  unit_price: Number(item.precio || montoTotal),
-  currency_id: "ARS",
-}));
+// const itemsParaMP = itemsOrden.map((item) => ({
+//   title: "Alquiler de Cancha",
+//   quantity: 1,
+//   unit_price: Number(item.precio || montoTotal),
+//   currency_id: "ARS",
+// }));
 const FRONTEND_URL = process.env.FRONTEND_URL || "https://rollingclub.netlify.app";
-    // 2. Armar preferenceData asegurando URLs válidas
+//     // 2. Armar preferenceData asegurando URLs válidas
 const preferenceData = {
-  items: itemsParaMP,
-  external_reference: nuevaOrden._id.toString(),
-  notification_url: "https://alquiler-cancha-proyecto-final-backend.onrender.com/api/pagoCancha/webhook",
-  back_urls: {
-    success: `${FRONTEND_URL}/mis-reservas`, // Te lleva al inicio de sus reservas si el pago sale bien
-    failure: `${FRONTEND_URL}/mis-reservas`, // Te lleva al inicio si el pago es rechazado
-    pending: `${FRONTEND_URL}/mis-reservas`, // Te lleva al inicio si queda pendiente
-  },
-   //auto_return: "approved" // Redirige al usuario automáticamente a tu página en 5 segundos sin esperar a que toque el botón
+ items: itemsParaMP,
+external_reference: nuevaOrden._id.toString(),
+ notification_url: "https://alquiler-cancha-proyecto-final-backend.onrender.com/api/pagoCancha/webhook",
+back_urls: {
+success: `${FRONTEND_URL}/mis-reservas`, // Te lleva al inicio de sus reservas si el pago sale bien
+failure: `${FRONTEND_URL}/mis-reservas`, // Te lleva al inicio si el pago es rechazado
+pending: `${FRONTEND_URL}/mis-reservas`, // Te lleva al inicio si queda pendiente
+},
+auto_return: "approved", // Redirige al usuario automáticamente a tu página en 5 segundos sin esperar a que toque el botón
 };
 
 // 3. Crear la preferencia
@@ -105,30 +105,7 @@ return res.status(201).json({
   sandbox_init_point: result.sandbox_init_point,
   ordenId: nuevaOrden._id
 });
-
-    // const backendUrl = process.env.BACKEND_URL?.trim().replace(/\/$/, "");
-    // const frontendUrl = process.env.PAYMENT_FRONTEND_URL?.trim().replace(
-    //   /\/$/,
-    //   "",
-    // );
-
-    // const preference = new Preference(client);
-    // const result = await preference.create({ body: preferenceData });
-
-    // nuevaOrden.preferenceId = result.id;
-    // await nuevaOrden.save();
-
-    // await Reserva.updateMany(
-    //   { _id: { $in: idsAProcesar } },
-    //   { $set: { preferenceId: result.id, estado: "pendiente" } },
-    // );
-
-    // return res.status(201).json({
-    //   mensaje: "Orden guardada en BD y preferencia de pago generada con éxito",
-    //   init_point: result.init_point,
-    //   sandbox_init_point: result.sandbox_init_point,
-    //   ordenId: nuevaOrden._id,
-    // });
+    
   } catch (error) {
     console.error("Error al crear la orden y la preferencia de pago:", error);
     return res.status(500).json({
@@ -137,6 +114,8 @@ return res.status(201).json({
     });
   }
 };
+
+
 export const recibirWebhookReserva = async (req, res) => {
   try {
     const tipo = req.body?.type || req.query?.type || req.body?.topic;
