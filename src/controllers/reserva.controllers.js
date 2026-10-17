@@ -1,8 +1,7 @@
 import mongoose from "mongoose";
 import { Reserva } from "../models/reserva.js";
 import Cancha from "../models/cancha.js";
-import  {MAPA_TURNOS, HORARIOS} from "../helpers/constants.js";
-
+import { MAPA_TURNOS, HORARIOS } from "../helpers/constants.js";
 
 export const obtenerHorariosDisponibles = async (req, res) => {
   try {
@@ -26,7 +25,9 @@ export const obtenerHorariosDisponibles = async (req, res) => {
     }
 
     // 1. Buscar la cancha
-    const cancha = await Cancha.findById(idCancha).select("nombreCancha precio");
+    const cancha = await Cancha.findById(idCancha).select(
+      "nombreCancha precio",
+    );
     if (!cancha) {
       return res.status(404).json({
         success: false,
@@ -45,7 +46,7 @@ export const obtenerHorariosDisponibles = async (req, res) => {
 
     // 3. Filtrar turnos libres usando HORARIOS de constants.js
     const turnosLibres = HORARIOS.filter(
-      (hora) => !horasOcupadas.includes(hora)
+      (hora) => !horasOcupadas.includes(hora),
     );
 
     return res.status(200).json({
@@ -88,17 +89,20 @@ export const crearReservaCancha = async (req, res) => {
     const turnosLimpios = turnos.map((h) => String(h).trim());
     const turnosUnicos = [...new Set(turnosLimpios)];
 
-    const invalidos = turnosUnicos.filter((hora) => !MAPA_TURNOS || !MAPA_TURNOS[hora]);
+    const invalidos = turnosUnicos.filter(
+      (hora) => !MAPA_TURNOS || !MAPA_TURNOS[hora],
+    );
     if (invalidos.length > 0) {
       return res.status(400).json({
         mensaje: `Los siguientes horarios no son válidos: ${invalidos.join(", ")}`,
       });
     }
-// 1. Buscamos el usuario si no se envió nombreCliente en el body
+    // 1. Buscamos el usuario si no se envió nombreCliente en el body
     let nombreFinal = nombreCliente;
     if (!nombreFinal && userId) {
       const usuarioEncontrado = await Usuario.findById(userId);
-      nombreFinal = usuarioEncontrado?.nombre || usuarioEncontrado?.email?.split("@")[0];
+      nombreFinal =
+        usuarioEncontrado?.nombre || usuarioEncontrado?.email?.split("@")[0];
     }
 
     // Si aún así no hay nombre, ponemos un fallback por defecto
@@ -106,24 +110,22 @@ export const crearReservaCancha = async (req, res) => {
       nombreFinal = "Cliente RollingClub";
     }
 
-
-
-const canchaExiste = await Cancha.findById(canchaId);
+    const canchaExiste = await Cancha.findById(canchaId);
     if (!canchaExiste) {
       return res
         .status(404)
         .json({ mensaje: "La cancha solicitada no existe" });
     }
-     const hace15Minutos = new Date(Date.now() - 15 * 60 * 1000);
-   
+    const hace15Minutos = new Date(Date.now() - 15 * 60 * 1000);
+
     const turnosOcupados = await Reserva.find({
       cancha: canchaId,
       fechaJornada: fecha,
-      horaInicio: { $in: turnosUnicos },$or: [
+      horaInicio: { $in: turnosUnicos },
+      $or: [
         { estado: "confirmada" },
         { estado: "pendiente", createdAt: { $gte: hace15Minutos } },
       ],
-      
     }).select("horaInicio");
 
     if (turnosOcupados.length > 0) {
@@ -139,6 +141,7 @@ const canchaExiste = await Cancha.findById(canchaId);
       usuario: userId,
       cancha: canchaId,
       fechaJornada: fecha,
+      nombreCliente: nombreFinal, 
       horaInicio: hora,
       estado: "pendiente",
     }));
@@ -153,7 +156,10 @@ const canchaExiste = await Cancha.findById(canchaId);
     console.error("Error en crearReservaCancha:", error);
     return res
       .status(500)
-      .json({ mensaje: "Error al procesar la reserva de la cancha", detalle: error.message });
+      .json({
+        mensaje: "Error al procesar la reserva de la cancha",
+        detalle: error.message,
+      });
   }
 };
 export const obtenerMisReservasCancha = async (req, res) => {
@@ -166,8 +172,7 @@ export const obtenerMisReservasCancha = async (req, res) => {
     if (todas.length > 0) {
       console.log("Campo 'usuario' de la primera reserva:", todas[0].usuario);
     }
-    
-    
+
     const misReservas = await Reserva.find({ usuario: userId })
       .populate("cancha", "nombreCancha precio")
       .sort({ fechaJornada: -1, horaInicio: 1 });
@@ -180,10 +185,9 @@ export const obtenerMisReservasCancha = async (req, res) => {
 };
 export const cancelarReservaCancha = async (req, res) => {
   try {
-    
     const userId = req.user.id;
     const { id } = req.params;
-    const reserva = await Reserva.findOne({ _id:id, usuario: userId });
+    const reserva = await Reserva.findOne({ _id: id, usuario: userId });
 
     if (!reserva) {
       return res.status(404).json({
