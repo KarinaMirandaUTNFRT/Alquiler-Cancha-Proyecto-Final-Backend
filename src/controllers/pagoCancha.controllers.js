@@ -64,17 +64,11 @@ export const crearPreferenciaReserva = async (req, res) => {
 
     await nuevaOrden.save();
 
-// Armamos los ítems con el formato requerido por Mercado Pago
-// const itemsParaMP = itemsOrden.map((item) => ({
-//   title: "Alquiler de Cancha",
-//   quantity: 1,
-//   unit_price: Number(item.precio || montoTotal),
-//   currency_id: "ARS",
-// }));
+
 const FRONTEND_URL = process.env.FRONTEND_URL || "https://rollingclub.netlify.app";
 //     // 2. Armar preferenceData asegurando URLs válidas
 const preferenceData = {
- items: itemsParaMP,
+ items: itemsMP,
 external_reference: nuevaOrden._id.toString(),
  notification_url: "https://alquiler-cancha-proyecto-final-backend.onrender.com/api/pagoCancha/webhook",
 back_urls: {
