@@ -3,7 +3,6 @@ import "./usuario.js";
 import "./cancha.js";
 import { HORARIOS } from "../helpers/constants.js";
 
-
 const reservaSchema = new Schema(
   {
     usuario: {
@@ -31,7 +30,7 @@ const reservaSchema = new Schema(
     },
     horaInicio: {
       type: String,
-      enum:HORARIOS,
+      enum: HORARIOS,
       required: true,
     },
 
@@ -40,22 +39,28 @@ const reservaSchema = new Schema(
       enum: ["pendiente", "confirmada", "cancelada"],
       default: "pendiente",
     },
+    grupoId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "OrdenListaReservas",
+      default: null,
+    },
   },
   { timestamps: true },
 );
 
-reservaSchema.index({ 
-  cancha: 1, 
-  fechaJornada: 1, 
-  horaInicio: 1, 
-  estado: 1 });
+reservaSchema.index({
+  cancha: 1,
+  fechaJornada: 1,
+  horaInicio: 1,
+  estado: 1,
+});
 
-  reservaSchema.index(
+reservaSchema.index(
   { createdAt: 1 },
-  { 
+  {
     expireAfterSeconds: 900, // segundos
-    partialFilterExpression: { estado: "pendiente" } 
-  }
+    partialFilterExpression: { estado: "pendiente" },
+  },
 );
 
 reservaSchema.virtual("fechaFormateada").get(function () {
