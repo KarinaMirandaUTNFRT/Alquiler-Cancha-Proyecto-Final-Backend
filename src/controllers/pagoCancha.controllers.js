@@ -8,128 +8,88 @@ const client = new MercadoPagoConfig({
 
 export const crearPreferenciaReserva = async (req, res) => {
   try {
-    const userId = req.user?.id || req.user?._id || req.usuario?._id || null;
+    const { reservaIds, reservaId, ordenId } = req.body;
+    const idEntrante = ordenId || reservaId || (Array.isArray(reservaIds) ? reservaIds[0] : null);
 
-    // Acepta tanto si viene por params (:id) como por body (reservaId, reservaIds, ordenId)
-    const idParam = req.params?.id || req.params?.idReserva;
-    const { reservaIds, reservaId, ordenId } = req.body || {};
-
-    let reservas = [];
-    let ordenExistente = null;
-
-    // Caso A: Si enviaron directamente el ID de una OrdenCancha ya creada
-    const posibleOrdenId = ordenId || idParam;
-    if (posibleOrdenId) {
-      ordenExistente = await OrdenCancha.findById(posibleOrdenId).populate({
-        path: "items.cancha",
-        select: "nombreCancha precio",
+    if (!idEntrante && (!reservaIds || reservaIds.length === 0)) {
+      return res.status(400).json({
+        mensaje: "Debes enviar un identificador de orden o reserva",
       });
     }
 
-    if (ordenExistente) {
-      // Tomamos las reservas vinculadas a esa orden
-      const idsDeOrden = ordenExistente.items.map((i) => i.reserva);
-      reservas = await Reserva.find({ _id: { $in: idsDeOrden } }).populate(
-        "cancha",
-        "nombreCancha precio"
-      );
-    } else {
-      // Caso B: Enviaron un array o un id de reserva suelto
-      const idsAProcesar = reservaIds || (reservaId ? [reservaId] : (idParam ? [idParam] : []));
+    // 1. Buscamos todas las reservas que coincidan con el ID directo, con el grupoId, o dentro del array
+    const listaIds = Array.isArray(reservaIds) && reservaIds.length > 0 ? reservaIds : [idEntrante];
 
-      if (idsAProcesar.length === 0) {
-        return res.status(400).json({
-          mensaje: "Debes enviar al menos un ID de reserva u orden",
-        });
+    let reservas = await Reserva.find({
+      $or: [
+        { _id: { $in: listaIds } },
+        { grupoId: idEntrante },
+      ],
+    }).populate("cancha", "nombreCancha precio");
+
+    // Si aún no encuentra reservas pero existe una orden guardada, leemos sus reservas asociadas
+    if (reservas.length === 0) {
+      const orden = await OrdenListaReservas.findById(idEntrante);
+      if (orden && orden.reservas?.length > 0) {
+        reservas = await Reserva.find({ _id: { $in: orden.reservas } }).populate(
+          "cancha",
+          "nombreCancha precio"
+        );
       }
-
-      reservas = await Reserva.find({
-        _id: { $in: idsAProcesar },
-      }).populate("cancha", "nombreCancha precio");
     }
 
+    // Validación final
     if (!reservas || reservas.length === 0) {
       return res.status(404).json({
         mensaje: "No se encontraron reservas para procesar el pago",
       });
     }
 
-    let montoTotal = 0;
-    const itemsMP = [];
-    const itemsOrden = [];
-
-    for (const reserva of reservas) {
-      const precioUnitario = Number(reserva.precio || reserva.cancha?.precio || 0);
-      montoTotal += precioUnitario;
-
-      itemsMP.push({
-        id: reserva._id.toString(),
-        title: `Cancha ${reserva.cancha?.nombreCancha || ""} (${reserva.fechaJornada || ""} ${reserva.horaInicio || ""}hs)`,
+    // 2. Construir los items para Mercado Pago
+    const itemsMP = reservas.map((r) => {
+      const precioUnitario = Number(r.precio || r.cancha?.precio || 15000);
+      return {
+        id: String(r._id),
+        title: `Cancha ${r.cancha?.nombreCancha || "Fútbol"} (${r.fechaJornada || ""} ${r.horaInicio || ""}hs)`.trim(),
         unit_price: precioUnitario,
         quantity: 1,
         currency_id: "ARS",
-      });
+      };
+    });
 
-      itemsOrden.push({
-        reserva: reserva._id,
-        cancha: reserva.cancha?._id || reserva.cancha,
-        nombreCancha: `Reserva ${reserva.cancha?.nombreCancha || "Cancha"} (${reserva.fechaJornada || ""} ${reserva.horaInicio || ""}hs)`,
-        precioUnitario,
-        cantidad: 1,
-      });
-    }
+    const FRONTEND_URL = process.env.FRONTEND_URL || "https://alquilercanchasnorte.netlify.app";
+    const BACKEND_URL = process.env.BACKEND_URL || "https://alquiler-cancha-proyecto-final-backend.onrender.com";
 
-    // Si no existía la orden, la creamos
-    let ordenFinal = ordenExistente;
-    if (!ordenFinal) {
-      ordenFinal = new OrdenCancha({
-        usuario: userId,
-        items: itemsOrden,
-        montoTotal,
-        estado: "pendiente",
-      });
-      await ordenFinal.save();
-    }
-
-    const FRONTEND_URL = process.env.FRONTEND_URL || "https://rollingclub.netlify.app";
-    const BACKEND_URL =
-      process.env.BACKEND_URL ||
-      "https://alquiler-cancha-proyecto-final-backend.onrender.com";
-
-    const preferenceData = {
-      items: itemsMP,
-      external_reference: ordenFinal._id.toString(),
-      notification_url: `${BACKEND_URL}/api/pagoCancha/webhook`,
-      back_urls: {
-        success: `${FRONTEND_URL}/checkout/resultado`,
-        failure: `${FRONTEND_URL}/checkout/resultado`,
-        pending: `${FRONTEND_URL}/checkout/resultado`,
-      },
-      auto_return: "approved",
-    };
-
-    // Crear la preferencia en Mercado Pago
+    // 3. Crear la preferencia
     const preference = new Preference(client);
-    const result = await preference.create({ body: preferenceData });
+    const result = await preference.create({
+      body: {
+        items: itemsMP,
+        external_reference: String(idEntrante),
+        notification_url: `${BACKEND_URL}/api/pagoCancha/webhook`,
+        back_urls: {
+          success: `${FRONTEND_URL}/checkout/resultado`,
+          failure: `${FRONTEND_URL}/checkout/resultado`,
+          pending: `${FRONTEND_URL}/checkout/resultado`,
+        },
+        auto_return: "approved",
+      },
+    });
 
-    // Actualizar la orden y las reservas con el preferenceId
-    ordenFinal.preferenceId = result.id;
-    await ordenFinal.save();
-
-    const idsActualizar = reservas.map((r) => r._id);
+    // Guardar preferenceId en las reservas
     await Reserva.updateMany(
-      { _id: { $in: idsActualizar } },
+      { _id: { $in: reservas.map((r) => r._id) } },
       { $set: { preferenceId: result.id, estado: "pendiente" } }
     );
 
-    return res.status(201).json({
-      mensaje: "Orden guardada y preferencia generada con éxito",
+    return res.status(200).json({
+      success: true,
       init_point: result.init_point,
       sandbox_init_point: result.sandbox_init_point,
-      ordenId: ordenFinal._id,
+      id: result.id,
     });
   } catch (error) {
-    console.error("Error al crear la orden y la preferencia de pago:", error);
+    console.error("Error al crear preferencia:", error);
     return res.status(500).json({
       mensaje: "Ocurrió un error al procesar la solicitud",
       error: error.message || error,
