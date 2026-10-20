@@ -13,7 +13,7 @@ export default class Server {
     this.app = express();
     this.PORT = process.env.PORT || 3000;
     this.middlewares();
-    this.reservaRouter();
+    this.routes();
   }
 
   middlewares() {
@@ -57,6 +57,7 @@ export default class Server {
 // 3. MONTAR LAS RUTAS
   routes() {
     // Monta la ruta de pagos exactamente en /api/pagoCancha
+    this.app.use("/api/reservas", reservaRouter);
     this.app.use("/api/pagoCancha", pagoCanchaRouter);
     this.app.use("/api/reservas", reservaRouter);
   }
