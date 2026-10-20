@@ -7,7 +7,7 @@ import "../database/db.js";
 import cookieParser from "cookie-parser";
 import pagoCanchaRouter from "../routes/pagoCancha.routes.js";
 import reservaRouter from "../routes/reserva.routes.js";
-import pagoCanchaRouter from "../routes/cancha.routes.js";
+import canchaRouter from "../routes/cancha.routes.js";
 
 export default class Server {
   constructor() {
@@ -58,7 +58,7 @@ export default class Server {
 // 3. MONTAR LAS RUTAS
   routes() {
     // Monta la ruta de pagos exactamente en /api/pagoCancha
-    this.app.use("/api/reservas", reservaRouter);
+    this.app.use("/api/canchas", canchaRouter);
     this.app.use("/api/pagoCancha", pagoCanchaRouter);
     this.app.use("/api/reservas", reservaRouter);
   }
