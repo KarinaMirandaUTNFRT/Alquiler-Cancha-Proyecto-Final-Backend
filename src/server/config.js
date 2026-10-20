@@ -7,6 +7,7 @@ import "../database/db.js";
 import cookieParser from "cookie-parser";
 import pagoCanchaRouter from "../routes/pagoCancha.routes.js";
 import reservaRouter from "../routes/reserva.routes.js";
+import pagoCanchaRouter from "../routes/cancha.routes.js";
 
 export default class Server {
   constructor() {
