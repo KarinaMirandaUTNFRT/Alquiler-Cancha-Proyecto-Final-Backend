@@ -5,12 +5,15 @@ import { dirname } from "path";
 import { fileURLToPath } from "url";
 import "../database/db.js";
 import cookieParser from "cookie-parser";
+import pagoCanchaRouter from "../routes/pagoCancha.routes.js";
+import reservaRouter from "../routes/reserva.routes.js";
 
 export default class Server {
   constructor() {
     this.app = express();
     this.PORT = process.env.PORT || 3000;
     this.middlewares();
+    this.reservaRouter();
   }
 
   middlewares() {
@@ -39,10 +42,6 @@ export default class Server {
           return callback(new Error(`Bloqueado por CORS: ${origin}`));
         },
 
-        // this.app.use(
-        //   cors({
-        //     origin: process.env.FRONTEND_URL || "https://rollingclub.netlify.app",
-
         credentials: true,
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allowedHeaders: ["Content-Type", "Authorization", "x-token"],
@@ -55,7 +54,12 @@ export default class Server {
     const __dirname = dirname(fileURLToPath(import.meta.url));
     this.app.use(express.static(__dirname + "/../../public"));
   }
-
+// 3. MONTAR LAS RUTAS
+  routes() {
+    // Monta la ruta de pagos exactamente en /api/pagoCancha
+    this.app.use("/api/pagoCancha", pagoCanchaRouter);
+    this.app.use("/api/reservas", reservaRouter);
+  }
   listen() {
     this.app.listen(this.PORT, () => {
       console.info(
